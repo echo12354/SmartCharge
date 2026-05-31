@@ -1,4 +1,4 @@
-# Charging Station Redesign
+# Charging Station
 
 This is an independent redesign of the smart charging station scheduling and billing system.
 
