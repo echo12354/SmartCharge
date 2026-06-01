@@ -1,10 +1,12 @@
-# System Events Mapping
+# 系统事件与代码映射
 
-This document maps the required OOD system events to the redesigned controller, service, and model objects.
+## 1. 文档目的
 
-## Event Table
+本文将 SmartCharge 的系统事件映射到当前后端代码中的控制器、服务类和主要模型对象，便于进行需求追踪、顺序图绘制、测试用例设计和代码定位。
 
-| System Event | Controller | Service | Main Model Objects |
+## 2. 系统事件总表
+
+| 系统事件 | 控制器 | 服务 | 主要模型对象 |
 |---|---|---|---|
 | `E_chargingRequest()` | `controllers/charging_request_controller.py` | `services/queue_service.py` | `ChargingRequest`, `WaitingCar`, `WaitingQueue` |
 | `Modify_Amount()` | `controllers/charging_request_controller.py` | `services/queue_service.py` | `ChargingRequest`, `WaitingCar` |
@@ -25,93 +27,102 @@ This document maps the required OOD system events to the redesigned controller, 
 | `Time Sequence Dispatch` | `controllers/fault_controller.py` | `services/fault_recovery_service.py`, `services/scheduling_service.py` | `WaitingCar`, `PileQueue`, `DispatchDecision` |
 | `Fault Recovery Dispatch` | `controllers/fault_controller.py`, `controllers/pile_controller.py` | `services/fault_recovery_service.py`, `services/scheduling_service.py`, `services/pile_management_service.py` | `FaultRecord`, `ChargingPile`, `WaitingCar`, `PileQueue` |
 
-## Original API Compatibility
+## 3. 用户充电请求模块
 
-The redesigned backend also includes `controllers/compatibility_controller.py`.
-
-Its purpose is to preserve original-style API behavior while still using the redesigned service layer:
-
-```text
-compatibility_controller.py
--> QueueService
--> SchedulingService
--> ChargingSessionService
--> BillingService
--> PileManagementService
--> FaultRecoveryService
-```
-
-This keeps old routes such as `/api/charging/request`, `/api/queue/status`, `/api/admin/piles`, and `/api/dispatch/statistics` available without reintroducing the old monolithic `server.py` structure.
-
-## Business Modules
-
-### Charging Request Module
-
-Events:
+相关事件：
 
 - `E_chargingRequest()`
 - `Modify_Amount()`
 - `Modify_Mode()`
 - `Query_Car_State()`
 
-Core objects:
+核心代码：
 
 - `ChargingRequestController`
 - `QueueService`
 - `ChargingRequest`
 - `WaitingCar`
 - `WaitingQueue`
+- `ChargingSessionService`
 
-### Queue and Scheduling Module
+主要说明：
 
-Events:
+- 充电请求由控制器接收，实际创建和修改逻辑集中在 `QueueService`。
+- 等待区车辆由 `WaitingCar` 表示。
+- 查询车辆状态时，需要同时检查等待队列和充电会话。
+
+## 4. 队列与调度模块
+
+相关事件：
 
 - `Query_QueueState()`
 - `Priority Dispatch`
 - `Time Sequence Dispatch`
+- `Fault Recovery Dispatch`
 
-Core objects:
+核心代码：
 
 - `QueueController`
-- `SchedulingService`
+- `SchedulingController`
+- `FaultController`
 - `QueueService`
+- `SchedulingService`
+- `FaultRecoveryService`
 - `WaitingQueue`
 - `PileQueue`
 - `DispatchDecision`
 
-### Charging Session Module
+主要说明：
 
-Events:
+- `QueueService` 负责等待区状态和用户队列视图。
+- `SchedulingService` 负责把等待车辆分配到合适的充电桩队列。
+- `FaultRecoveryService` 在故障场景下协调受影响车辆的重新调度。
+
+## 5. 充电会话模块
+
+相关事件：
 
 - `Start_Charging()`
 - `Query_Charging_State()`
 - `End_Charging()`
 
-Core objects:
+核心代码：
 
 - `ChargingSessionController`
 - `ChargingSessionService`
+- `SchedulingService`
 - `PileManagementService`
 - `ChargingSession`
 - `ChargingPile`
 
-### Billing Module
+主要说明：
 
-Events:
+- 开始充电需要确认充电桩状态和车辆分配关系。
+- 查询状态主要读取 `ChargingSession` 和 `ChargingPile`。
+- 结束充电后需要释放充电桩，并触发账单生成和后续调度。
+
+## 6. 账单模块
+
+相关事件：
 
 - `Request_Bill()`
 - `Request_DetailedList()`
 
-Core objects:
+核心代码：
 
 - `BillController`
 - `BillingService`
 - `Bill`
 - `ChargingSession`
 
-### Charging Pile and Fault Module
+主要说明：
 
-Events:
+- `BillingService` 负责计费规则和账单查询。
+- 账单数据来自充电会话中的电量、时间和充电桩信息。
+
+## 7. 充电桩与故障模块
+
+相关事件：
 
 - `powerOn()`
 - `setParameters()`
@@ -120,7 +131,7 @@ Events:
 - `Query_PileState()`
 - `Fault Recovery Dispatch`
 
-Core objects:
+核心代码：
 
 - `PileController`
 - `FaultController`
@@ -128,3 +139,53 @@ Core objects:
 - `FaultRecoveryService`
 - `ChargingPile`
 - `FaultRecord`
+- `PileQueue`
+
+主要说明：
+
+- 充电桩状态变更由 `PileManagementService` 统一管理。
+- 故障发生和恢复由 `FaultRecoveryService` 记录并协调调度。
+- 充电桩状态查询需要同时展示设备状态和队列状态。
+
+## 8. 兼容接口映射
+
+当前后端还提供 `controllers/compatibility_controller.py`，用于接收兼容路径的请求。兼容接口不会单独维护业务逻辑，而是继续委托到现有服务层。
+
+调用关系：
+
+```text
+CompatibilityController
+-> QueueService
+-> SchedulingService
+-> ChargingSessionService
+-> BillingService
+-> PileManagementService
+-> FaultRecoveryService
+```
+
+常见兼容接口包括：
+
+- `POST /api/login`
+- `POST /api/register`
+- `POST /api/charging/request`
+- `GET /api/charging/current`
+- `GET /api/queue/status`
+- `POST /api/queue/modify-amount`
+- `POST /api/queue/modify-mode`
+- `GET /api/admin/piles`
+- `POST /api/admin/piles/{pile_id}/status`
+- `GET /api/dispatch/statistics`
+- `GET /api/charging/records`
+
+## 9. 测试用例覆盖建议
+
+建议按系统事件组织接口测试：
+
+- 用户注册和登录。
+- 创建充电请求并检查排队编号。
+- 修改电量和修改充电模式。
+- 查询车辆状态和队列状态。
+- 手动触发调度并查询调度结果。
+- 开始充电、查询充电状态、结束充电。
+- 查询账单列表和账单详情。
+- 模拟充电桩下电、故障、恢复和重新调度。

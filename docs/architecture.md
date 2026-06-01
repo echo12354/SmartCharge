@@ -1,63 +1,93 @@
-# Architecture
+# 系统架构设计
 
-This project is an independent redesign of the smart charging station scheduling and billing system. It references the business requirements and workflow of the existing system, but it does not copy its code.
+## 1. 系统定位
 
-The backend uses Flask and follows a simple layered architecture suitable for software engineering OOD coursework.
+SmartCharge 是新能源汽车充电调度与计费管理系统。系统面向充电站运行场景，负责接收用户充电请求、维护等待区与充电区队列、调度可用充电桩、记录充电过程，并在充电结束后生成账单。
 
-## Directory Structure
+当前项目以后端 API 为核心，采用 Flask 提供 HTTP 接口，前端目录作为独立展示层预留。
+
+## 2. 架构目标
+
+- 将接口处理、业务流程、领域状态和通用工具分层组织。
+- 保持后端 API 与前端展示解耦，方便后续接入 Web 前端、移动端或接口测试平台。
+- 让充电请求、队列调度、充电桩状态、充电会话、账单计费和故障恢复具有清晰边界。
+- 便于绘制类图、顺序图和系统事件映射图。
+- 支持后续扩展数据库持久化、更多调度策略和更完整的运维统计能力。
+
+## 3. 总体分层
 
 ```text
-charging-station-redesign/
-├─ backend/
-│  ├─ app.py
-│  ├─ controllers/
-│  ├─ services/
-│  ├─ models/
-│  ├─ database/
-│  ├─ config/
-│  └─ utils/
-├─ frontend/
-└─ docs/
+前端或接口测试工具
+        |
+        v
+HTTP API 控制器层
+        |
+        v
+业务服务层
+        |
+        v
+领域模型层
+        |
+        v
+配置、工具与数据访问支持
 ```
 
-## Layer Responsibilities
+## 4. 目录职责
 
-### controllers
+```text
+backend/
+|-- app.py
+|-- controllers/
+|-- services/
+|-- models/
+|-- database/
+|-- config/
+`-- utils/
+```
 
-The controller layer receives HTTP requests and returns HTTP responses.
+### 4.1 `app.py`
 
-Responsibilities:
+Flask 应用入口，负责创建应用实例、注册业务蓝图、开启跨域支持并提供健康检查接口。
 
-- define Flask routes
-- parse request body, query parameters, path parameters, and headers
-- call service methods
-- convert service results into JSON responses
-- avoid business logic
-- avoid direct database access
+### 4.2 `controllers`
 
-Typical files:
+控制器层负责处理 HTTP 请求和响应。
+
+主要职责：
+
+- 定义 Flask 路由。
+- 解析请求体、查询参数、路径参数和请求头。
+- 调用服务层方法。
+- 将服务层结果封装为 JSON 响应。
+- 避免直接编写复杂业务逻辑。
+- 避免直接操作底层数据结构。
+
+典型模块：
 
 - `auth_controller.py`
 - `charging_request_controller.py`
 - `queue_controller.py`
+- `scheduling_controller.py`
 - `charging_session_controller.py`
 - `bill_controller.py`
 - `pile_controller.py`
 - `fault_controller.py`
-- `scheduling_controller.py`
+- `compatibility_controller.py`
 
-### services
+### 4.3 `services`
 
-The service layer implements system events and business workflows.
+服务层是系统业务核心，负责组织系统事件和业务流程。
 
-Responsibilities:
+主要职责：
 
-- validate business conditions
-- coordinate multiple model objects
-- coordinate queue, scheduling, pile, charging session, billing, and fault recovery
-- call database access functions when persistence is needed
+- 校验业务条件。
+- 管理充电请求与等待队列。
+- 执行调度策略并维护充电桩队列。
+- 创建、更新和结束充电会话。
+- 计算并查询账单。
+- 处理充电桩故障、恢复和重新调度。
 
-Typical classes:
+典型服务：
 
 - `UserService`
 - `QueueService`
@@ -67,17 +97,17 @@ Typical classes:
 - `PileManagementService`
 - `FaultRecoveryService`
 
-### models
+### 4.4 `models`
 
-The model layer defines domain objects used in UML class diagrams.
+模型层定义业务领域对象，用于表达系统静态结构。
 
-Responsibilities:
+主要职责：
 
-- hold domain state
-- expose simple state-changing methods
-- describe relationships between charging requests, queues, piles, sessions, and bills
+- 保存领域状态。
+- 提供简单的状态变更方法。
+- 描述用户、请求、队列、充电桩、会话、账单和故障记录之间的关系。
 
-Typical classes:
+典型模型：
 
 - `User`
 - `ChargingRequest`
@@ -90,53 +120,63 @@ Typical classes:
 - `DispatchDecision`
 - `FaultRecord`
 
-### database
+### 4.5 `database`
 
-The database layer is responsible for database connection and initialization.
+数据访问与初始化模块，负责描述数据库状态、初始化入口和后续持久化扩展位置。当前版本主要使用内存状态承载业务运行。
 
-Responsibilities:
+### 4.6 `config`
 
-- create database connection
-- initialize tables
-- seed default users and charging piles
-- provide simple persistence utilities for services
+配置层集中保存系统参数，包括：
 
-### config
+- 快充桩与慢充桩编号。
+- 充电桩功率。
+- 等待区容量。
+- 充电桩队列容量。
+- 服务费率。
+- 峰、平、谷电价。
+- 默认用户。
 
-Configuration layer.
+### 4.7 `utils`
 
-Responsibilities:
+通用工具层负责响应封装、参数校验和编号生成等公共能力。
 
-- Flask settings
-- database path or URL
-- charging pile count
-- charging pile power
-- queue capacity
-- pricing parameters
-- scheduling parameters
+## 5. 核心业务流程
 
-### utils
+1. 用户登录或注册。
+2. 用户提交充电请求，系统生成排队编号。
+3. 车辆进入等待区队列。
+4. 调度服务根据充电模式、队列顺序和充电桩状态分配车辆。
+5. 车辆进入充电桩队列并开始充电。
+6. 充电会话记录当前电量、目标电量和运行状态。
+7. 充电结束后生成账单。
+8. 系统释放充电桩并继续调度下一辆车。
 
-Shared utilities.
+## 6. 故障与恢复流程
 
-Responsibilities:
+当充电桩发生故障时，系统需要：
 
-- response formatting
-- parameter validation
-- ID generation
-- time formatting
-- common constants
+- 将充电桩标记为故障状态。
+- 记录故障信息。
+- 找到受影响的车辆和充电会话。
+- 中断或转移相关车辆。
+- 根据优先级调度或时间顺序调度规则重新安排车辆。
 
-## OOD View
+当充电桩恢复时，系统需要：
 
-For UML purposes, the system can be viewed as:
+- 将充电桩恢复为可用状态。
+- 更新故障记录。
+- 触发等待车辆调度。
+
+## 7. OOD 视角
+
+从面向对象设计角度看，系统可以抽象为：
 
 ```text
-Actor
--> Controller
--> Service
--> Model
--> Database
+参与者
+-> 控制器对象
+-> 服务对象
+-> 领域模型对象
+-> 数据或状态存储
 ```
 
-Controller objects are boundary/control entry points for API requests. Service objects are control objects for business use cases. Model objects are entity objects.
+控制器属于边界对象，服务属于控制对象，模型属于实体对象。该划分便于在类图、顺序图和系统事件图中保持一致。

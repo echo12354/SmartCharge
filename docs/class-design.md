@@ -1,65 +1,77 @@
-# Class Design
+# 核心类与静态结构设计
 
-This document lists the core classes and relationships for UML class diagrams.
+## 1. 设计目标
 
-## Controller Classes
+本文整理 SmartCharge 后端的核心类、模块职责和静态关系，用于支持类图绘制、接口扩展、业务维护和测试用例设计。
 
-| Class | Responsibility |
+## 2. 控制器类
+
+| 类或模块 | 职责 |
 |---|---|
-| `AuthController` | login, register, current user query |
-| `ChargingRequestController` | submit charging request, modify request, query car state |
-| `QueueController` | query user queue and admin queue state |
-| `SchedulingController` | query scheduling state and optionally trigger scheduling |
-| `ChargingSessionController` | start, query, and end charging sessions |
-| `BillController` | bill and detailed list queries |
-| `PileController` | pile power, parameters, state, and detail operations |
-| `FaultController` | pile fault, recovery, and recovery dispatch operations |
-| `CompatibilityController` | original-style API route compatibility, delegating to redesigned services |
+| `AuthController` | 用户注册、登录和身份相关接口 |
+| `ChargingRequestController` | 提交充电请求、修改电量、修改模式、查询车辆状态、取消请求 |
+| `QueueController` | 查询用户队列和管理员队列状态 |
+| `SchedulingController` | 查询调度状态，手动触发调度 |
+| `ChargingSessionController` | 开始充电、查询充电状态、结束充电、查询会话列表 |
+| `BillController` | 查询账单列表和账单详情 |
+| `PileController` | 查询充电桩、上下电、启动、修改参数 |
+| `FaultController` | 充电桩故障、恢复、优先级调度和时间顺序调度 |
+| `CompatibilityController` | 提供兼容接口，并统一委托到现有服务层 |
 
-## Service Classes
+## 3. 服务类
 
-| Class | Responsibility |
+| 类 | 职责 |
 |---|---|
-| `UserService` | user registration, login, role validation |
-| `QueueService` | charging request creation/modification, waiting queue, queue number, car position, and queue state |
-| `SchedulingService` | select charging pile and manage pile queues |
-| `ChargingSessionService` | create, start, update, and stop charging sessions |
-| `BillingService` | calculate and query bills |
-| `PileManagementService` | manage pile state, pile parameters, and pile statistics |
-| `FaultRecoveryService` | handle pile faults, affected cars, and recovery dispatch |
+| `UserService` | 用户注册、登录、角色校验和用户查询 |
+| `QueueService` | 创建和修改充电请求，维护等待队列、排队编号、车辆位置和队列状态 |
+| `SchedulingService` | 选择合适充电桩，维护充电桩队列，生成调度决策 |
+| `ChargingSessionService` | 创建、开始、更新、中断和结束充电会话 |
+| `BillingService` | 根据充电会话计算费用，生成和查询账单 |
+| `PileManagementService` | 管理充电桩状态、参数、统计信息和可用性 |
+| `FaultRecoveryService` | 处理充电桩故障、受影响车辆、恢复调度和故障记录 |
 
-## Model Classes
+## 4. 模型类
 
-### User
+### 4.1 `User`
 
-Represents a registered system user.
+表示系统用户。
 
-Important attributes:
+主要属性：
 
-- `user_id`
-- `username`
-- `password_hash`
-- `role`
+- `user_id`：用户标识。
+- `username`：用户名。
+- `password_hash`：密码摘要。
+- `role`：用户角色。
 
-### ChargingRequest
+主要职责：
 
-Represents a user's charging request.
+- 作为充电请求和账单的归属主体。
+- 区分普通用户和管理员。
 
-Important attributes:
+### 4.2 `ChargingRequest`
 
-- `request_id`
-- `user_id`
-- `charge_mode`
-- `requested_amount`
-- `status`
-- `queue_number`
-- `created_at`
+表示一次用户充电请求。
 
-### WaitingCar
+主要属性：
 
-Represents a car waiting for charging.
+- `request_id`：请求标识。
+- `user_id`：用户标识。
+- `charge_mode`：充电模式，通常分为快充和慢充。
+- `requested_amount`：请求充电电量。
+- `status`：请求状态。
+- `queue_number`：排队号码。
+- `created_at`：创建时间。
 
-Important attributes:
+主要职责：
+
+- 描述车辆充电需求。
+- 记录排队状态和调度状态。
+
+### 4.3 `WaitingCar`
+
+表示等待充电的车辆。
+
+主要属性：
 
 - `user_id`
 - `request_id`
@@ -70,70 +82,75 @@ Important attributes:
 - `assigned_pile_id`
 - `join_time`
 
-### WaitingQueue
+主要职责：
 
-Represents the station waiting area.
+- 作为等待区和充电桩队列中的调度单元。
+- 保存车辆在队列中的位置和目标充电桩。
 
-Important attributes:
+### 4.4 `WaitingQueue`
 
-- `capacity`
-- `cars`
-- `fast_counter`
-- `slow_counter`
+表示充电站等待区。
 
-Important behavior:
+主要属性：
 
-- add waiting car
-- remove waiting car
-- generate queue number
-- query cars by mode
+- `capacity`：等待区容量。
+- `cars`：等待车辆集合。
+- `fast_counter`：快充排队计数器。
+- `slow_counter`：慢充排队计数器。
 
-### PileQueue
+主要行为：
 
-Represents the two-slot queue of one charging pile.
+- 添加等待车辆。
+- 移除等待车辆。
+- 生成排队号码。
+- 按充电模式查询车辆。
 
-Important attributes:
+### 4.5 `PileQueue`
 
-- `pile_id`
-- `charging_car`
-- `waiting_car`
-- `capacity`
+表示单个充电桩对应的队列。
 
-Important behavior:
+主要属性：
 
-- add car
-- remove car
-- move waiting car to charging slot
-- query available capacity
+- `pile_id`：充电桩标识。
+- `charging_car`：当前充电车辆。
+- `waiting_car`：桩前等待车辆。
+- `capacity`：队列容量。
 
-### ChargingPile
+主要行为：
 
-Represents a charging pile.
+- 添加车辆。
+- 移除车辆。
+- 将等待车辆移动到充电位置。
+- 查询剩余容量。
 
-Important attributes:
+### 4.6 `ChargingPile`
 
-- `pile_id`
-- `pile_type`
-- `power`
-- `status`
-- `is_enabled`
-- `parameters`
+表示充电桩设备。
 
-Important behavior:
+主要属性：
 
-- power on
-- power off
-- start pile
-- stop pile
-- update parameters
-- mark fault
-- recover from fault
+- `pile_id`：充电桩标识。
+- `pile_type`：充电桩类型。
+- `power`：充电功率。
+- `status`：运行状态。
+- `is_enabled`：是否启用。
+- `parameters`：运行参数。
 
-### ChargingSession
+主要行为：
 
-Represents an active or historical charging process.
+- 上电。
+- 下电。
+- 启动。
+- 停止。
+- 修改参数。
+- 标记故障。
+- 从故障中恢复。
 
-Important attributes:
+### 4.7 `ChargingSession`
+
+表示一次正在进行或已经结束的充电过程。
+
+主要属性：
 
 - `session_id`
 - `user_id`
@@ -144,19 +161,19 @@ Important attributes:
 - `start_time`
 - `end_time`
 
-Important behavior:
+主要行为：
 
-- start
-- update progress
-- complete
-- interrupt
-- stop
+- 开始充电。
+- 更新充电进度。
+- 完成充电。
+- 中断充电。
+- 停止充电。
 
-### Bill
+### 4.8 `Bill`
 
-Represents a charging bill or detailed list item.
+表示充电账单。
 
-Important attributes:
+主要属性：
 
 - `bill_id`
 - `session_id`
@@ -168,17 +185,17 @@ Important attributes:
 - `total_fee`
 - `created_at`
 
-Important behavior:
+主要行为：
 
-- calculate charge fee
-- calculate service fee
-- calculate total fee
+- 计算充电费。
+- 计算服务费。
+- 计算总费用。
 
-### DispatchDecision
+### 4.9 `DispatchDecision`
 
-Represents one scheduling decision.
+表示一次调度决策。
 
-Important attributes:
+主要属性：
 
 - `decision_id`
 - `request_id`
@@ -187,11 +204,16 @@ Important attributes:
 - `reason`
 - `created_at`
 
-### FaultRecord
+主要职责：
 
-Represents one charging pile fault and recovery record.
+- 记录车辆被分配到某个充电桩的原因。
+- 支持调度过程追踪和调试。
 
-Important attributes:
+### 4.10 `FaultRecord`
+
+表示一次充电桩故障和恢复记录。
+
+主要属性：
 
 - `fault_id`
 - `pile_id`
@@ -201,7 +223,12 @@ Important attributes:
 - `affected_car_ids`
 - `status`
 
-## UML Relationships
+主要职责：
+
+- 保存故障发生、影响范围和恢复结果。
+- 支持故障恢复调度。
+
+## 5. 静态关系
 
 ```text
 User 1 ---- 0..* ChargingRequest
@@ -216,7 +243,32 @@ FaultRecoveryService 1 ---- 0..* FaultRecord
 FaultRecord 1 ---- 0..* WaitingCar
 ```
 
-## Suggested UML Packages
+## 6. 状态枚举建议
+
+### 6.1 充电请求状态
+
+- `WAITING`：等待中。
+- `QUEUED`：已进入充电桩队列。
+- `CHARGING`：充电中。
+- `FINISHED`：已完成。
+- `CANCELLED`：已取消。
+
+### 6.2 充电桩状态
+
+- `AVAILABLE`：可用。
+- `BUSY`：使用中。
+- `OFFLINE`：已关闭。
+- `FAULT`：故障。
+
+### 6.3 充电会话状态
+
+- `RUNNING`：进行中。
+- `FINISHED`：已结束。
+- `INTERRUPTED`：已中断。
+
+## 7. UML 包划分
+
+建议在 UML 类图中按以下包组织：
 
 ```text
 controllers
@@ -227,39 +279,4 @@ config
 utils
 ```
 
-For the second software engineering assignment, the most useful class diagram can focus on:
-
-- `ChargingRequest`
-- `WaitingCar`
-- `WaitingQueue`
-- `PileQueue`
-- `ChargingPile`
-- `ChargingSession`
-- `Bill`
-- `DispatchDecision`
-- `FaultRecord`
-- corresponding service classes
-
-## Implemented Code Files
-
-```text
-models/user.py
-models/charging_request.py
-models/waiting_car.py
-models/waiting_queue.py
-models/pile_queue.py
-models/charging_pile.py
-models/charging_session.py
-models/bill.py
-models/dispatch_decision.py
-models/fault_record.py
-
-services/user_service.py
-services/queue_service.py
-services/scheduling_service.py
-services/charging_session_service.py
-services/billing_service.py
-services/pile_management_service.py
-services/fault_recovery_service.py
-controllers/compatibility_controller.py
-```
+核心类图可重点展示 `ChargingRequest`、`WaitingCar`、`WaitingQueue`、`PileQueue`、`ChargingPile`、`ChargingSession`、`Bill`、`DispatchDecision`、`FaultRecord` 以及对应服务类。
