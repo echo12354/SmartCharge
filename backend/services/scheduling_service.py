@@ -4,6 +4,7 @@ from config.settings import FAST_PILES, PILE_POWER, SLOW_PILES
 from models.dispatch_decision import DispatchDecision
 from models.pile_queue import PileQueue
 from models.waiting_car import WaitingCar
+from repositories.dispatch_repository import DispatchRepository
 from services.charging_session_service import charging_session_service
 from services.pile_management_service import pile_management_service
 
@@ -14,7 +15,9 @@ class SchedulingService:
             pile_id: PileQueue(pile_id) for pile_id in (*FAST_PILES, *SLOW_PILES)
         }
         self.decisions: list[DispatchDecision] = []
+        self.repository = DispatchRepository()
         self.engine_running = True
+        self._load_recent_decisions_from_database()
 
     def dispatch_waiting_cars(self):
         if not self.engine_running:
@@ -41,7 +44,7 @@ class SchedulingService:
                     reason="selected available pile with shortest estimated completion time",
                     expected_completion_hours=expected,
                 )
-                self.decisions.append(decision)
+                self._record_decision(decision)
                 if car.queue_position == "CHARGING":
                     self._start_car_session(car, pile_id)
         return self.get_statistics()
@@ -143,8 +146,8 @@ class SchedulingService:
                 }
                 for pile_id, queue in self.pile_queues.items()
             },
-            "totalDispatched": len(self.decisions),
-            "decisionCount": len(self.decisions),
+            "totalDispatched": self._decision_count(),
+            "decisionCount": self._decision_count(),
             "recentDecisions": [item.to_dict() for item in self.decisions[-10:]],
         }
 
@@ -205,7 +208,7 @@ class SchedulingService:
                     reason=f"{strategy.lower()} dispatch",
                     expected_completion_hours=car.requested_amount / PILE_POWER[pile_id],
                 )
-                self.decisions.append(decision)
+                self._record_decision(decision)
                 dispatched.append(car)
                 break
         return dispatched
@@ -230,6 +233,25 @@ class SchedulingService:
             return int(queue_number[1:])
         except Exception:
             return 0
+
+    def _record_decision(self, decision: DispatchDecision):
+        self.decisions.append(decision)
+        try:
+            self.repository.save_decision(decision)
+        except Exception:
+            pass
+
+    def _load_recent_decisions_from_database(self):
+        try:
+            self.decisions = self.repository.list_recent_decisions(10)
+        except Exception:
+            pass
+
+    def _decision_count(self):
+        try:
+            return self.repository.count_decisions()
+        except Exception:
+            return len(self.decisions)
 
 
 scheduling_service = SchedulingService()

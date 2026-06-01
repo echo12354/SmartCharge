@@ -7,6 +7,7 @@ Do not split it into ChargingRequestService or WaitingQueueService.
 from models.charging_request import ChargingRequest
 from models.waiting_car import WaitingCar
 from models.waiting_queue import WaitingQueue
+from repositories.request_repository import RequestRepository
 from utils.validators import normalize_charge_mode
 
 
@@ -15,6 +16,8 @@ class QueueService:
         self.waiting_queue = WaitingQueue()
         self.requests_by_id: dict[str, ChargingRequest] = {}
         self.active_request_by_user: dict[str, str] = {}
+        self.repository = RequestRepository()
+        self._load_active_requests_from_database()
 
     def submit_request(self, user_id: str, charge_mode: str, amount: float):
         mode = normalize_charge_mode(charge_mode)
@@ -38,6 +41,7 @@ class QueueService:
         request.status = "WAITING"
         self.requests_by_id[request.request_id] = request
         self.active_request_by_user[user_id] = request.request_id
+        self._save_request_to_database(request)
 
         from services.scheduling_service import scheduling_service
         scheduling_service.dispatch_waiting_cars()
@@ -53,6 +57,7 @@ class QueueService:
         car = self.waiting_queue.get_by_user(user_id)
         if car:
             car.requested_amount = amount
+        self._save_request_to_database(request)
         return request
 
     def modify_mode(self, user_id: str, charge_mode: str):
@@ -72,6 +77,7 @@ class QueueService:
         queue_number = self.waiting_queue.add_car(new_car)
         request.assign_queue_number(queue_number)
         request.status = "WAITING"
+        self._save_request_to_database(request)
         return request
 
     def cancel_request(self, user_id: str):
@@ -81,10 +87,11 @@ class QueueService:
         scheduling_service.remove_user_from_pile_queues(user_id)
         request.cancel()
         self.active_request_by_user.pop(user_id, None)
+        self._save_request_to_database(request)
         return request
 
     def query_car_state(self, user_id: str):
-        request = self.requests_by_id.get(self.active_request_by_user.get(user_id, ""))
+        request = self._get_cached_or_database_active_request(user_id)
         waiting_car = self.waiting_queue.get_by_user(user_id)
         from services.scheduling_service import scheduling_service
         from services.charging_session_service import charging_session_service
@@ -182,28 +189,36 @@ class QueueService:
         }
 
     def get_request(self, request_id: str):
-        return self.requests_by_id.get(request_id)
+        request = self.requests_by_id.get(request_id) or self._get_request_from_database(request_id)
+        if request:
+            self._cache_request(request)
+        return request
 
     def mark_dispatched(self, car: WaitingCar, pile_id: str):
-        request = self.requests_by_id.get(car.request_id)
+        request = self.get_request(car.request_id)
         if request:
             request.assign_pile(pile_id)
+            self._save_request_to_database(request)
 
     def mark_charging(self, car: WaitingCar):
-        request = self.requests_by_id.get(car.request_id)
+        request = self.get_request(car.request_id)
         if request:
             request.mark_charging()
+            self._save_request_to_database(request)
 
     def mark_completed_by_user(self, user_id: str):
         request_id = self.active_request_by_user.pop(user_id, None)
-        if request_id and request_id in self.requests_by_id:
-            self.requests_by_id[request_id].mark_completed()
+        request = self.get_request(request_id) if request_id else self._get_active_request_from_database(user_id)
+        if request:
+            request.mark_completed()
+            self.requests_by_id[request.request_id] = request
+            self._save_request_to_database(request)
 
     def _get_active_request_for_user(self, user_id: str):
-        request_id = self.active_request_by_user.get(user_id)
-        if not request_id:
+        request = self._get_cached_or_database_active_request(user_id)
+        if not request:
             raise ValueError("active request not found")
-        return self.requests_by_id[request_id]
+        return request
 
     def _ensure_modifiable(self, request: ChargingRequest):
         if request.status != "WAITING":
@@ -220,6 +235,48 @@ class QueueService:
         if request:
             return request.status
         return "IDLE"
+
+    def _load_active_requests_from_database(self):
+        try:
+            for request in self.repository.list_active_requests():
+                self._cache_request(request)
+        except Exception:
+            pass
+
+    def _get_cached_or_database_active_request(self, user_id: str):
+        request_id = self.active_request_by_user.get(user_id)
+        request = self.requests_by_id.get(request_id) if request_id else None
+        if request:
+            return request
+        request = self._get_active_request_from_database(user_id)
+        if request:
+            self._cache_request(request)
+        return request
+
+    def _get_active_request_from_database(self, user_id: str):
+        try:
+            return self.repository.get_active_request_by_user(user_id)
+        except Exception:
+            return None
+
+    def _get_request_from_database(self, request_id: str):
+        if not request_id:
+            return None
+        try:
+            return self.repository.get_request(request_id)
+        except Exception:
+            return None
+
+    def _save_request_to_database(self, request: ChargingRequest):
+        try:
+            self.repository.save_request(request)
+        except Exception:
+            pass
+
+    def _cache_request(self, request: ChargingRequest):
+        self.requests_by_id[request.request_id] = request
+        if request.status not in ("COMPLETED", "CANCELLED"):
+            self.active_request_by_user[request.user_id] = request.request_id
 
 
 queue_service = QueueService()
