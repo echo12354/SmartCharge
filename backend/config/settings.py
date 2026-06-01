@@ -6,9 +6,9 @@ SLOW_PILES = ("C", "D", "E")
 PILE_POWER = {
     "A": 30.0,
     "B": 30.0,
-    "C": 7.0,
-    "D": 7.0,
-    "E": 7.0,
+    "C": 10.0,
+    "D": 10.0,
+    "E": 10.0,
 }
 
 WAITING_QUEUE_CAPACITY = 6

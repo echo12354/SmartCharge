@@ -153,9 +153,9 @@ INSERT INTO `charging_piles` (`pile_id`, `pile_type`, `power`, `status`, `is_ena
 VALUES
   ('A', 'fast', 30.0, 'ACTIVE', 1, JSON_OBJECT()),
   ('B', 'fast', 30.0, 'ACTIVE', 1, JSON_OBJECT()),
-  ('C', 'slow', 7.0, 'ACTIVE', 1, JSON_OBJECT()),
-  ('D', 'slow', 7.0, 'ACTIVE', 1, JSON_OBJECT()),
-  ('E', 'slow', 7.0, 'ACTIVE', 1, JSON_OBJECT())
+  ('C', 'slow', 10.0, 'ACTIVE', 1, JSON_OBJECT()),
+  ('D', 'slow', 10.0, 'ACTIVE', 1, JSON_OBJECT()),
+  ('E', 'slow', 10.0, 'ACTIVE', 1, JSON_OBJECT())
 ON DUPLICATE KEY UPDATE
   `pile_type` = VALUES(`pile_type`),
   `power` = VALUES(`power`);
