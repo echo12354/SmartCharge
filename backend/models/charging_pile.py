@@ -1,4 +1,7 @@
-"""Charging pile model."""
+"""充电桩模型。
+
+表示站内一台可执行充电任务的设备，记录类型、功率、运行状态和累计统计。
+"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -6,6 +9,12 @@ from datetime import datetime
 
 @dataclass
 class ChargingPile:
+    """充电桩运行状态对象。
+
+    `pile_type` 区分快充/慢充，`power` 对应需求书中的充电功率，
+    `current_session_id` 表示当前正在服务的充电会话。
+    """
+
     pile_id: str
     pile_type: str
     power: float

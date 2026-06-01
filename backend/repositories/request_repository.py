@@ -1,4 +1,7 @@
-"""MySQL repository for charging requests."""
+"""充电请求仓储。
+
+服务层优先通过这里读写 MySQL；如果数据库不可用，服务层会捕获异常并继续使用内存兜底。
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,8 @@ from models.charging_request import ChargingRequest
 
 
 class RequestRepository:
+    """负责 `charging_requests` 表和 `ChargingRequest` 模型之间的转换。"""
+
     def save_request(self, request: ChargingRequest) -> None:
         with db_cursor(commit=True) as cursor:
             cursor.execute(

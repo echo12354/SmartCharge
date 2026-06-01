@@ -1,4 +1,7 @@
-"""MySQL repository for bills."""
+"""账单仓储。
+
+账单属于验收中的核心持久化数据，查询时优先从 MySQL 读取，内存账单作为兜底。
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,8 @@ from models.bill import Bill
 
 
 class BillRepository:
+    """负责 `bills` 表和 `Bill` 模型之间的转换。"""
+
     def save_bill(self, bill: Bill) -> None:
         with db_cursor(commit=True) as cursor:
             cursor.execute(

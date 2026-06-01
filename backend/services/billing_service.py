@@ -1,4 +1,8 @@
-"""Billing service."""
+"""计费服务。
+
+负责生成和查询充电详单。费用规则由 `Bill` 模型执行：
+电费按峰平谷单价计算，服务费按固定服务费率乘以电量计算。
+"""
 
 from models.bill import Bill
 from repositories.bill_repository import BillRepository
@@ -11,6 +15,7 @@ class BillingService:
         self.repository = BillRepository()
 
     def create_bill(self, session):
+        """根据已结束的充电会话生成账单，并优先保存到 MySQL。"""
         if not session.start_time or not session.end_time:
             raise ValueError("session must have start and end time")
         existing = self.get_bill(session.session_id)
@@ -31,6 +36,7 @@ class BillingService:
         return bill
 
     def get_bill(self, bill_id_or_session_id: str):
+        """账单查询优先读 MySQL；数据库不可用时回退内存账单。"""
         bill = self._get_bill_from_database(bill_id_or_session_id)
         if bill:
             self._cache_bill(bill)

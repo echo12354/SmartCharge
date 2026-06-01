@@ -1,4 +1,7 @@
-"""Charging session routes."""
+"""充电会话接口。
+
+处理开始充电、查询充电状态、结束充电和活跃会话列表。
+"""
 
 from flask import Blueprint, request
 
@@ -31,6 +34,7 @@ def query_charging_state():
 
 @charging_session_bp.post("/<session_id>/end")
 def end_charging(session_id):
+    """用户或管理员结束充电时，服务层会同步生成账单。"""
     data = request.get_json() or {}
     try:
         session, bill = scheduling_service.end_charging(session_id, data.get("reason", "manual stop"))

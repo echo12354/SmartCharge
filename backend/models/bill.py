@@ -1,4 +1,7 @@
-"""Bill model."""
+"""账单模型。
+
+一次充电结束后生成一条账单，保存电费、服务费和总费用等详单字段。
+"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -9,6 +12,11 @@ from utils.id_generator import generate_id
 
 @dataclass
 class Bill:
+    """用户充电详单。
+
+    账单费用由两部分组成：峰平谷电费 + 固定服务费。
+    """
+
     session_id: str
     user_id: str
     pile_id: str
@@ -25,6 +33,7 @@ class Bill:
     total_fee: float = field(init=False)
 
     def __post_init__(self):
+        """创建账单时立即按照开始充电时段计算费用。"""
         self.price_type, self.unit_price = self._price_for_time(self.start_time)
         self.charge_fee = round(self.energy_amount * self.unit_price, 2)
         self.service_fee = round(self.energy_amount * SERVICE_FEE_RATE, 2)
@@ -32,6 +41,7 @@ class Bill:
 
     @staticmethod
     def _price_for_time(start_time: datetime):
+        """需求书中的峰平谷时段规则。"""
         hour = start_time.hour
         if 10 <= hour < 15 or 18 <= hour < 21:
             return "PEAK", PEAK_PRICE

@@ -41,6 +41,7 @@ def power_on(pile_id):
 
 @pile_bp.post("/<pile_id>/power-off")
 def power_off(pile_id):
+    """管理员关闭充电桩时按故障场景处理，并触发受影响车辆重新调度。"""
     data = request.get_json() or {}
     try:
         record, dispatched = fault_recovery_service.power_off_with_fault(

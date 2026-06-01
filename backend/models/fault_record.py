@@ -1,4 +1,7 @@
-"""Fault record model."""
+"""故障记录模型。
+
+记录充电桩故障发生、影响车辆和恢复时间，用于故障调度过程追踪。
+"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -8,6 +11,11 @@ from utils.id_generator import generate_id
 
 @dataclass
 class FaultRecord:
+    """一次故障处理的业务记录。
+
+    `affected_car_ids` 保存故障发生时该桩队列中受影响的车辆用户 ID。
+    """
+
     pile_id: str
     reason: str
     affected_car_ids: list[str]

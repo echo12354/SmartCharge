@@ -1,4 +1,7 @@
-"""MySQL repository for dispatch decisions."""
+"""调度决策仓储。
+
+普通调度、优先级调度和时间顺序调度都会尽量写入 MySQL，便于追踪调度原因。
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,8 @@ from models.dispatch_decision import DispatchDecision
 
 
 class DispatchRepository:
+    """负责 `dispatch_decisions` 表和 `DispatchDecision` 模型之间的转换。"""
+
     def save_decision(self, decision: DispatchDecision) -> None:
         with db_cursor(commit=True) as cursor:
             cursor.execute(

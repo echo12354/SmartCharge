@@ -1,4 +1,7 @@
-"""Charging session service."""
+"""充电会话服务。
+
+负责车辆开始充电、查询充电状态、结束充电以及生成账单前的会话归档。
+"""
 
 from models.charging_session import ChargingSession
 from repositories.session_repository import SessionRepository
@@ -7,6 +10,11 @@ from services.pile_management_service import pile_management_service
 
 
 class ChargingSessionService:
+    """管理活跃会话和历史会话。
+
+    MySQL 可用时优先读取会话状态；数据库不可用时继续使用内存中的会话字典。
+    """
+
     def __init__(self):
         self.active_sessions: dict[str, ChargingSession] = {}
         self.completed_sessions: dict[str, ChargingSession] = {}
@@ -16,6 +24,7 @@ class ChargingSessionService:
         self._load_active_sessions_from_database()
 
     def create_and_start(self, user_id: str, pile_id: str, amount: float, request_id: str | None = None):
+        """创建并启动充电会话，同一用户和同一充电桩不能重复开启活跃会话。"""
         active = self.get_user_active_session(user_id)
         if active:
             return active
@@ -69,6 +78,7 @@ class ChargingSessionService:
         return session
 
     def end_session(self, session_id: str, reason: str = "manual stop"):
+        """结束活跃会话，更新充电桩统计并生成账单。"""
         session = self.active_sessions.get(session_id) or self._get_session_from_database(session_id)
         if not session:
             raise ValueError("active session not found")
@@ -85,6 +95,7 @@ class ChargingSessionService:
         return session, bill
 
     def close_completed_sessions(self):
+        """定期归档已自动充满的会话，并为其生成账单。"""
         closed = []
         for session_id, session in list(self.active_sessions.items()):
             session.refresh_progress()
@@ -157,6 +168,7 @@ class ChargingSessionService:
             self._cache_session(session)
 
     def _cache_session(self, session: ChargingSession):
+        """按会话状态放入活跃区或历史区，保持内存兜底可用。"""
         if session.status in ("PREPARING", "CHARGING"):
             self.active_sessions[session.session_id] = session
             self.user_active_session[session.user_id] = session.session_id

@@ -1,4 +1,7 @@
-"""User model."""
+"""用户模型。
+
+表示系统登录主体，角色用于区分普通用户和管理员。
+"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -6,6 +9,11 @@ from datetime import datetime
 
 @dataclass
 class User:
+    """用户账号信息。
+
+    `role` 为 `admin` 时具备管理员权限，普通用户只能操作自己的充电请求和账单。
+    """
+
     username: str
     password: str
     role: str = "user"

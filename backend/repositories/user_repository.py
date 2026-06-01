@@ -1,4 +1,7 @@
-"""MySQL repository for users."""
+"""用户仓储。
+
+用户信息优先保存到 MySQL；数据库异常由服务层兜底，不影响注册登录的内存模式。
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,8 @@ from database.db import db_cursor
 
 
 class UserRepository:
+    """负责 `users` 表和 `User` 模型之间的转换。"""
+
     def list_users(self) -> list[User]:
         with db_cursor() as cursor:
             cursor.execute(

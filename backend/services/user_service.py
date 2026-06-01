@@ -1,4 +1,7 @@
-"""User business service."""
+"""用户服务。
+
+负责注册、登录和管理员权限判断，用户数据优先使用 MySQL，失败时回退默认内存用户。
+"""
 
 from config.settings import DEFAULT_USERS
 from models.user import User
@@ -6,6 +9,11 @@ from repositories.user_repository import UserRepository
 
 
 class UserService:
+    """用户业务入口。
+
+    `self.users` 保留内存兜底，保证数据库不可用时基础登录流程仍能演示。
+    """
+
     def __init__(self):
         self.users: dict[str, User] = {}
         self.repository = UserRepository()
@@ -18,6 +26,7 @@ class UserService:
         self._load_users_from_database()
 
     def register(self, username: str, password: str, role: str = "user"):
+        """注册用户，用户名在内存或数据库中已存在时拒绝创建。"""
         if not username or not password:
             raise ValueError("username and password are required")
         existing = self.get_user(username)
@@ -31,6 +40,7 @@ class UserService:
         return user
 
     def login(self, username: str, password: str):
+        """登录成功后记录最后登录时间，并尽量同步到 MySQL。"""
         user = self.get_user(username)
         if not user or not user.verify_password(password):
             raise ValueError("invalid username or password")
@@ -50,6 +60,7 @@ class UserService:
         return user
 
     def require_admin(self, username: str):
+        """管理员接口调用前的角色校验。"""
         user = self.get_user(username)
         if not user or not user.is_admin():
             raise PermissionError("admin permission required")

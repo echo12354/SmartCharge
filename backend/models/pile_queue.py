@@ -1,4 +1,7 @@
-"""Charging pile queue model."""
+"""充电桩队列模型。
+
+表示单个充电桩前的运行时队列，当前包含一个充电位和一个等待位。
+"""
 
 from dataclasses import dataclass
 
@@ -8,6 +11,11 @@ from models.waiting_car import WaitingCar
 
 @dataclass
 class PileQueue:
+    """某一台充电桩对应的队列状态。
+
+    `charging_car` 是正在充电的车辆，`waiting_car` 是该桩前等待的下一辆车。
+    """
+
     pile_id: str
     capacity: int = PILE_QUEUE_CAPACITY
     charging_car: WaitingCar | None = None
@@ -20,6 +28,7 @@ class PileQueue:
         return self.charging_car is None and self.waiting_car is None
 
     def add_car(self, car: WaitingCar) -> str:
+        """车辆进入桩队列时，优先进入充电位，其次进入等待位。"""
         if self.charging_car is None:
             self.charging_car = car
             car.queue_position = "CHARGING"
@@ -44,6 +53,7 @@ class PileQueue:
         return None
 
     def promote_waiting_car(self) -> WaitingCar | None:
+        """当前充电位空出后，将桩前等待车辆提升为正在充电车辆。"""
         if self.charging_car is None and self.waiting_car is not None:
             self.charging_car = self.waiting_car
             self.waiting_car = None

@@ -1,4 +1,7 @@
-"""Waiting area queue model."""
+"""等候区队列模型。
+
+车辆提交请求后先进入等候区，再由调度服务移动到匹配的充电桩队列。
+"""
 
 from dataclasses import dataclass, field
 
@@ -8,6 +11,11 @@ from models.waiting_car import WaitingCar
 
 @dataclass
 class WaitingQueue:
+    """充电站等候区。
+
+    快充和慢充分别维护 F/T 计数器，队列总容量受 `capacity` 限制。
+    """
+
     capacity: int = WAITING_QUEUE_CAPACITY
     cars: list[WaitingCar] = field(default_factory=list)
     fast_counter: int = 0
@@ -17,6 +25,7 @@ class WaitingQueue:
         return len(self.cars) < self.capacity
 
     def add_car(self, car: WaitingCar) -> str:
+        """加入等候区并生成排队号：快充 F 开头，慢充 T 开头。"""
         if not self.has_space():
             raise ValueError("waiting queue is full")
         if car.charge_mode == "fast":
@@ -47,6 +56,7 @@ class WaitingQueue:
         return next((car for car in self.cars if car.user_id == user_id), None)
 
     def cars_by_mode(self, mode: str) -> list[WaitingCar]:
+        """按充电模式取车，并保持先到先服务顺序。"""
         return sorted(
             [car for car in self.cars if car.charge_mode == mode],
             key=lambda car: car.join_time,

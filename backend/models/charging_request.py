@@ -1,4 +1,7 @@
-"""Charging request model."""
+"""充电请求模型。
+
+表示用户一次尚未完成的充电需求，记录充电模式、电量、排队号和调度状态。
+"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -8,6 +11,12 @@ from utils.id_generator import generate_id
 
 @dataclass
 class ChargingRequest:
+    """用户提交充电后生成的业务对象。
+
+    `charge_mode` 区分快充/慢充，`queue_number` 保存 F/T 排队号，
+    `assigned_pile_id` 表示该请求被调度到的充电桩。
+    """
+
     user_id: str
     charge_mode: str
     requested_amount: float

@@ -1,4 +1,7 @@
-"""MySQL repository for charging sessions."""
+"""充电会话仓储。
+
+MySQL 用于保存正在进行和已结束的充电会话，便于查询状态和系统重启后的基础恢复。
+"""
 
 from __future__ import annotations
 
@@ -7,6 +10,8 @@ from models.charging_session import ChargingSession
 
 
 class SessionRepository:
+    """负责 `charging_sessions` 表和 `ChargingSession` 模型之间的转换。"""
+
     ACTIVE_STATUSES = ("PREPARING", "CHARGING")
 
     def save_session(self, session: ChargingSession) -> None:

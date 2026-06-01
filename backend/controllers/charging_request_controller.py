@@ -25,6 +25,7 @@ def create_request():
 
 @charging_request_bp.patch("/amount")
 def modify_amount():
+    """用户仍在等候区时修改请求电量，业务上保留原排队号。"""
     data = request.get_json() or {}
     username = request.headers.get("X-Username") or data.get("userId")
     try:
@@ -36,6 +37,7 @@ def modify_amount():
 
 @charging_request_bp.patch("/mode")
 def modify_mode():
+    """用户修改快充/慢充模式，对应切换队列并重新生成排队号。"""
     data = request.get_json() or {}
     username = request.headers.get("X-Username") or data.get("userId")
     try:
@@ -55,6 +57,7 @@ def query_car_state():
 
 @charging_request_bp.post("/cancel")
 def cancel_request():
+    """用户取消当前充电请求，服务层负责从等候区或桩队列移除车辆。"""
     data = request.get_json() or {}
     username = request.headers.get("X-Username") or data.get("userId")
     try:

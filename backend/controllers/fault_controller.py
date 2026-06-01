@@ -27,6 +27,7 @@ def create_fault(pile_id):
 
 @fault_bp.post("/<pile_id>/recover")
 def recover_fault(pile_id):
+    """管理员恢复故障桩，服务层会重新启用充电桩并尝试调度同类型车辆。"""
     try:
         record, dispatched = fault_recovery_service.recover_pile(pile_id)
         return success("fault recovered", {

@@ -1,4 +1,8 @@
-"""Charging scheduling service."""
+"""充电调度服务。
+
+负责把等候区车辆调度到同类型充电桩队列。等待车辆和桩队列仍是运行时内存状态，
+调度决策会尽量写入 MySQL 便于追踪。
+"""
 
 from config.settings import FAST_PILES, PILE_POWER, SLOW_PILES
 from models.dispatch_decision import DispatchDecision
@@ -20,6 +24,10 @@ class SchedulingService:
         self._load_recent_decisions_from_database()
 
     def dispatch_waiting_cars(self):
+        """执行普通调度。
+
+        策略是“最短完成时间”：在同模式充电桩中选择预计完成时间最短的桩。
+        """
         if not self.engine_running:
             return self.get_statistics()
         self.refresh_finished_sessions()
@@ -89,9 +97,11 @@ class SchedulingService:
         return closed
 
     def priority_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
+        """故障场景的优先级调度入口，优先处理故障桩转移出来的车辆。"""
         return self._dispatch_specific_cars(cars, candidate_piles, "PRIORITY")
 
     def time_sequence_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
+        """故障场景的时间顺序调度入口，按 F/T 排队号重新排序后调度。"""
         ordered = sorted(cars, key=lambda car: self._queue_number_sort_key(car.queue_number))
         return self._dispatch_specific_cars(ordered, candidate_piles, "TIME_SEQUENCE")
 
@@ -152,6 +162,7 @@ class SchedulingService:
         }
 
     def _select_optimal_pile(self, car: WaitingCar):
+        """选择预计完成时间最短的可用充电桩。"""
         candidate_ids = FAST_PILES if car.charge_mode == "fast" else SLOW_PILES
         best_pile_id = None
         best_time = None
@@ -168,6 +179,7 @@ class SchedulingService:
 
     @staticmethod
     def _estimate_completion_time(queue: PileQueue, amount: float, power: float):
+        """预计完成时间 = 前方车辆剩余等待时间 + 本车充电时间。"""
         wait_time = 0.0
         active = charging_session_service.get_pile_active_session(queue.pile_id)
         if active:
@@ -190,6 +202,7 @@ class SchedulingService:
         return session
 
     def _dispatch_specific_cars(self, cars: list[WaitingCar], candidate_piles: list[str], strategy: str):
+        """把指定车辆集合放入候选充电桩队列，供故障调度复用。"""
         dispatched = []
         for car in cars:
             for pile_id in candidate_piles:
@@ -235,6 +248,7 @@ class SchedulingService:
             return 0
 
     def _record_decision(self, decision: DispatchDecision):
+        """记录调度决策；数据库失败时仍保留内存记录。"""
         self.decisions.append(decision)
         try:
             self.repository.save_decision(decision)

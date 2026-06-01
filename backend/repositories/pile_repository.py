@@ -1,4 +1,7 @@
-"""MySQL repository for charging piles."""
+"""充电桩仓储。
+
+充电桩配置和运行统计优先从 MySQL 读取；数据库不可用时服务层继续使用默认内存桩。
+"""
 
 from __future__ import annotations
 
@@ -9,6 +12,8 @@ from models.charging_pile import ChargingPile
 
 
 class PileRepository:
+    """负责 `charging_piles` 表和 `ChargingPile` 模型之间的转换。"""
+
     def list_piles(self) -> list[ChargingPile]:
         with db_cursor() as cursor:
             cursor.execute(

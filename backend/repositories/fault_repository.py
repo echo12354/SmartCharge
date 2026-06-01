@@ -1,4 +1,7 @@
-"""MySQL repository for fault records."""
+"""故障记录仓储。
+
+故障发生和恢复记录优先写入 MySQL；写入失败时服务层仍保留内存记录用于接口返回。
+"""
 
 from __future__ import annotations
 
@@ -9,6 +12,8 @@ from models.fault_record import FaultRecord
 
 
 class FaultRepository:
+    """负责 `fault_records` 表和 `FaultRecord` 模型之间的转换。"""
+
     def save_record(self, record: FaultRecord) -> None:
         with db_cursor(commit=True) as cursor:
             cursor.execute(

@@ -1,4 +1,7 @@
-"""Charging session model."""
+"""充电会话模型。
+
+表示车辆真正进入充电桩后的一次充电过程，用于计算进度、时长和账单。
+"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -8,6 +11,12 @@ from utils.id_generator import generate_id
 
 @dataclass
 class ChargingSession:
+    """一次充电过程的运行状态。
+
+    `target_amount` 是目标电量，`current_amount` 是已充电量，
+    `pile_power` 用来按时间推算实时充电进度。
+    """
+
     user_id: str
     pile_id: str
     target_amount: float
@@ -25,6 +34,7 @@ class ChargingSession:
         self.start_time = datetime.now()
 
     def refresh_progress(self):
+        """按已运行时间和充电桩功率刷新当前电量。"""
         if self.status != "CHARGING" or not self.start_time:
             return
         elapsed_hours = (datetime.now() - self.start_time).total_seconds() / 3600

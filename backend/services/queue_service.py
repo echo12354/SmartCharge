@@ -1,7 +1,7 @@
-"""Queue service.
+"""排队与充电请求服务。
 
-This service intentionally combines charging request and waiting queue behavior.
-Do not split it into ChargingRequestService or WaitingQueueService.
+本服务同时维护充电请求和等候区队列：提交请求后生成 F/T 排队号，
+等待调度服务把车辆移动到对应类型的充电桩队列。
 """
 
 from models.charging_request import ChargingRequest
@@ -20,6 +20,10 @@ class QueueService:
         self._load_active_requests_from_database()
 
     def submit_request(self, user_id: str, charge_mode: str, amount: float):
+        """提交充电请求。
+
+        等候区容量由 `WaitingQueue` 控制；快充生成 F 序号，慢充生成 T 序号。
+        """
         mode = normalize_charge_mode(charge_mode)
         amount = float(amount)
         if amount <= 0:
@@ -48,6 +52,10 @@ class QueueService:
         return request
 
     def modify_amount(self, user_id: str, amount: float):
+        """修改请求电量。
+
+        电量变化不会改变车辆在同一队列中的先后顺序，因此排队号保持不变。
+        """
         request = self._get_active_request_for_user(user_id)
         self._ensure_modifiable(request)
         amount = float(amount)
@@ -61,6 +69,10 @@ class QueueService:
         return request
 
     def modify_mode(self, user_id: str, charge_mode: str):
+        """修改充电模式。
+
+        快充和慢充使用不同队列，模式变化后需要移出原队列并按新模式重新排队。
+        """
         request = self._get_active_request_for_user(user_id)
         self._ensure_modifiable(request)
         mode = normalize_charge_mode(charge_mode)
@@ -81,6 +93,7 @@ class QueueService:
         return request
 
     def cancel_request(self, user_id: str):
+        """取消当前请求，并从等候区或充电桩队列中移除车辆。"""
         request = self._get_active_request_for_user(user_id)
         self.waiting_queue.remove_by_user(user_id)
         from services.scheduling_service import scheduling_service
@@ -124,6 +137,7 @@ class QueueService:
         }
 
     def get_queue_ahead_count(self, user_id: str):
+        """计算用户前方等待车辆数，用于客户端展示排队进度。"""
         waiting = self.waiting_queue.get_by_user(user_id)
         if waiting:
             position = self.waiting_queue.position_of(user_id)
@@ -268,6 +282,7 @@ class QueueService:
             return None
 
     def _save_request_to_database(self, request: ChargingRequest):
+        """MySQL 可用时同步请求状态；失败时继续使用内存数据。"""
         try:
             self.repository.save_request(request)
         except Exception:

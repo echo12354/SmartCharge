@@ -1,4 +1,7 @@
-"""Charging pile management service."""
+"""充电桩管理服务。
+
+负责充电桩启停、故障状态、功率校正、统计报表和 MySQL 同步。
+"""
 
 from datetime import datetime, timedelta
 
@@ -8,6 +11,11 @@ from repositories.pile_repository import PileRepository
 
 
 class PileManagementService:
+    """维护站内所有充电桩的当前状态。
+
+    默认配置来自 `settings.py`；MySQL 可用时加载数据库状态，不可用时使用内存默认桩。
+    """
+
     def __init__(self):
         self.piles: dict[str, ChargingPile] = {}
         self.repository = PileRepository()
@@ -95,6 +103,7 @@ class PileManagementService:
         }
 
     def get_reports(self):
+        """管理员统计报表，支持 day/week/month/all 四种时间范围。"""
         time_range = self._get_report_time_range()
         bills = self._filter_bills_by_time_range(self._list_report_bills(), time_range)
         bills_by_pile = {}
@@ -157,6 +166,7 @@ class PileManagementService:
             pass
 
     def _normalize_pile_power(self, pile: ChargingPile):
+        """按需求书配置校正充电桩功率，避免旧数据库数据覆盖当前配置。"""
         expected_power = PILE_POWER.get(pile.pile_id)
         if expected_power is None or pile.power == expected_power:
             return
