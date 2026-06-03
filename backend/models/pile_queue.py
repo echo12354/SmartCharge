@@ -52,6 +52,18 @@ class PileQueue:
             return car
         return None
 
+    def remove_by_request_id(self, request_id: str) -> WaitingCar | None:
+        if self.charging_car and self.charging_car.request_id == request_id:
+            car = self.charging_car
+            self.charging_car = None
+            self.promote_waiting_car()
+            return car
+        if self.waiting_car and self.waiting_car.request_id == request_id:
+            car = self.waiting_car
+            self.waiting_car = None
+            return car
+        return None
+
     def promote_waiting_car(self) -> WaitingCar | None:
         """当前充电位空出后，将桩前等待车辆提升为正在充电车辆。"""
         if self.charging_car is None and self.waiting_car is not None:

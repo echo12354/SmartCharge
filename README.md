@@ -55,7 +55,64 @@ SmartCharge/
 - `backend/database/`：数据库连接与初始化预留模块，当前用于描述数据状态。
 - `backend/utils/`：响应封装、参数校验、编号生成等通用工具。
 - `docs/`：系统架构、类设计、动态结构和系统事件映射文档。
-- `frontend/`：前端项目预留目录。
+- `frontend/`：React + Vite 前端，包含用户客户端与管理员客户端界面。
+
+## 前端运行方法
+
+进入前端目录：
+
+```bash
+cd frontend
+```
+
+安装依赖：
+
+```bash
+npm install
+```
+
+启动开发服务器（默认 `http://localhost:5173`，API 代理至后端 `5001` 端口）：
+
+```bash
+npm run dev
+```
+
+请先启动后端服务，再访问前端页面。
+
+### 前端功能
+
+**用户客户端**
+
+- 注册、登录
+- **同一账号可管理多辆车**（默认最多 10 个活跃充电请求，可在 `backend/config/settings.py` 调整 `MAX_ACTIVE_REQUESTS_PER_USER`）
+- 为每辆车提交独立充电请求（车辆名称、快充/慢充、充电量）
+- 查看每辆车的排队号码、前方等待车辆数
+- 等候区修改充电模式或电量、取消单辆车的充电
+- 查看每辆车充电进度并结束充电
+- 查看充电详单（编号、时间、桩号、电量、时长、费用等）
+
+**前后端分离与多客户端**
+
+- 后端独立运行在 `http://localhost:5001`（Flask API）
+- 前端独立运行在 `http://localhost:5173`（Vite 开发服务器）
+- 复制 `frontend/.env.example` 为 `frontend/.env`，按需设置：
+
+```env
+VITE_API_BASE_URL=http://localhost:5001
+```
+
+- 开发时 `VITE_API_BASE_URL` 留空，Vite 会把 `/api` 代理到后端
+- 多台电脑/多个浏览器可各自打开前端，登录**同一用户账号**即可看到该用户下**所有车辆**的实时状态
+- 也可为不同用户分别登录（如 `user`、`test1`），模拟多车主同时使用充电站
+
+**管理员客户端**
+
+- 系统概览与手动触发调度
+- 启动/关闭/故障模拟/恢复充电桩
+- 查看各区域等候车辆队列
+- 按日/周/月/全部查看统计报表
+
+默认测试账号与后端一致：`user / 123`、`admin / 123`。
 
 ## 后端运行方法
 
@@ -117,9 +174,11 @@ POST /api/auth/login
 POST /api/auth/register
 
 POST  /api/charging-requests
+GET   /api/charging-requests
+GET   /api/charging-requests/car-state
+GET   /api/charging-requests/{request_id}/state
 PATCH /api/charging-requests/amount
 PATCH /api/charging-requests/mode
-GET   /api/charging-requests/car-state
 POST  /api/charging-requests/cancel
 
 GET /api/queues/state

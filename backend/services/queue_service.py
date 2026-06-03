@@ -1,9 +1,10 @@
 """排队与充电请求服务。
 
 本服务同时维护充电请求和等候区队列：提交请求后生成 F/T 排队号，
-等待调度服务把车辆移动到对应类型的充电桩队列。
+等待调度服务把车辆移动到对应类型的充电桩队列。同一用户可持有多个未完成请求（多辆车）。
 """
 
+from config.settings import MAX_ACTIVE_REQUESTS_PER_USER
 from models.charging_request import ChargingRequest
 from models.waiting_car import WaitingCar
 from models.waiting_queue import WaitingQueue
@@ -15,68 +16,69 @@ class QueueService:
     def __init__(self):
         self.waiting_queue = WaitingQueue()
         self.requests_by_id: dict[str, ChargingRequest] = {}
-        self.active_request_by_user: dict[str, str] = {}
+        self.active_requests_by_user: dict[str, set[str]] = {}
         self.repository = RequestRepository()
         self._load_active_requests_from_database()
 
-    def submit_request(self, user_id: str, charge_mode: str, amount: float):
+    def submit_request(self, user_id: str, charge_mode: str, amount: float, vehicle_label: str = ""):
         """提交充电请求。
 
-        等候区容量由 `WaitingQueue` 控制；快充生成 F 序号，慢充生成 T 序号。
+        同一用户可同时提交多个请求，每个请求对应一辆车；受 `MAX_ACTIVE_REQUESTS_PER_USER` 限制。
         """
         mode = normalize_charge_mode(charge_mode)
         amount = float(amount)
         if amount <= 0:
             raise ValueError("requested amount must be positive")
-        if user_id in self.active_request_by_user:
-            existing = self.requests_by_id[self.active_request_by_user[user_id]]
-            if existing.status not in ("COMPLETED", "CANCELLED"):
-                raise ValueError("user already has active charging request")
 
-        request = ChargingRequest(user_id=user_id, charge_mode=mode, requested_amount=amount)
+        active_count = len(self._list_active_request_ids(user_id))
+        if active_count >= MAX_ACTIVE_REQUESTS_PER_USER:
+            raise ValueError(f"user can have at most {MAX_ACTIVE_REQUESTS_PER_USER} active charging requests")
+
+        label = (vehicle_label or "").strip()
+        request = ChargingRequest(
+            user_id=user_id,
+            charge_mode=mode,
+            requested_amount=amount,
+            vehicle_label=label,
+        )
         car = WaitingCar(
             user_id=user_id,
             request_id=request.request_id,
             charge_mode=mode,
             requested_amount=amount,
+            vehicle_label=label,
         )
         queue_number = self.waiting_queue.add_car(car)
         request.assign_queue_number(queue_number)
         request.status = "WAITING"
         self.requests_by_id[request.request_id] = request
-        self.active_request_by_user[user_id] = request.request_id
+        self._track_active_request(request)
         self._save_request_to_database(request)
 
         from services.scheduling_service import scheduling_service
         scheduling_service.dispatch_waiting_cars()
         return request
 
-    def modify_amount(self, user_id: str, amount: float):
-        """修改请求电量。
-
-        电量变化不会改变车辆在同一队列中的先后顺序，因此排队号保持不变。
-        """
-        request = self._get_active_request_for_user(user_id)
+    def modify_amount(self, user_id: str, amount: float, request_id: str | None = None):
+        """修改请求电量。电量变化不会改变车辆在同一队列中的先后顺序，因此排队号保持不变。"""
+        request = self._get_active_request_for_user(user_id, request_id)
         self._ensure_modifiable(request)
         amount = float(amount)
         if amount <= 0:
             raise ValueError("requested amount must be positive")
         request.change_amount(amount)
-        car = self.waiting_queue.get_by_user(user_id)
+        car = self.waiting_queue.get_by_request_id(request.request_id)
         if car:
             car.requested_amount = amount
         self._save_request_to_database(request)
         return request
 
-    def modify_mode(self, user_id: str, charge_mode: str):
-        """修改充电模式。
-
-        快充和慢充使用不同队列，模式变化后需要移出原队列并按新模式重新排队。
-        """
-        request = self._get_active_request_for_user(user_id)
+    def modify_mode(self, user_id: str, charge_mode: str, request_id: str | None = None):
+        """修改充电模式。模式变化后需要移出原队列并按新模式重新排队。"""
+        request = self._get_active_request_for_user(user_id, request_id)
         self._ensure_modifiable(request)
         mode = normalize_charge_mode(charge_mode)
-        old_car = self.waiting_queue.remove_by_user(user_id)
+        old_car = self.waiting_queue.remove_by_request_id(request.request_id)
         if not old_car:
             raise ValueError("request can only be modified in waiting area")
         request.change_mode(mode)
@@ -85,6 +87,7 @@ class QueueService:
             request_id=request.request_id,
             charge_mode=mode,
             requested_amount=request.requested_amount,
+            vehicle_label=request.vehicle_label,
         )
         queue_number = self.waiting_queue.add_car(new_car)
         request.assign_queue_number(queue_number)
@@ -92,30 +95,41 @@ class QueueService:
         self._save_request_to_database(request)
         return request
 
-    def cancel_request(self, user_id: str):
-        """取消当前请求，并从等候区或充电桩队列中移除车辆。"""
-        request = self._get_active_request_for_user(user_id)
-        self.waiting_queue.remove_by_user(user_id)
+    def cancel_request(self, user_id: str, request_id: str | None = None):
+        """取消指定请求，并从等候区或充电桩队列中移除对应车辆。"""
+        request = self._get_active_request_for_user(user_id, request_id)
+        self.waiting_queue.remove_by_request_id(request.request_id)
         from services.scheduling_service import scheduling_service
-        scheduling_service.remove_user_from_pile_queues(user_id)
+        scheduling_service.remove_request_from_pile_queues(request.request_id)
         request.cancel()
-        self.active_request_by_user.pop(user_id, None)
+        self._untrack_active_request(request)
         self._save_request_to_database(request)
         return request
 
+    def list_active_requests(self, user_id: str):
+        return [
+            request for request in (
+                self.get_request(request_id) for request_id in self._list_active_request_ids(user_id)
+            ) if request
+        ]
+
+    def query_request_state(self, user_id: str, request_id: str):
+        request = self._get_active_request_for_user(user_id, request_id)
+        return self._build_request_state(request)
+
     def query_car_state(self, user_id: str):
-        request = self._get_cached_or_database_active_request(user_id)
-        waiting_car = self.waiting_queue.get_by_user(user_id)
-        from services.scheduling_service import scheduling_service
-        from services.charging_session_service import charging_session_service
-        pile_state = scheduling_service.find_user_in_pile_queues(user_id)
-        session = charging_session_service.get_user_active_session(user_id)
+        """兼容旧接口：返回该用户全部车辆的汇总状态。"""
+        vehicles = [self._build_request_state(request) for request in self.list_active_requests(user_id)]
+        primary = vehicles[0] if len(vehicles) == 1 else None
         return {
-            "request": request.to_dict() if request else None,
-            "waitingCar": waiting_car.to_dict() if waiting_car else None,
-            "pileQueue": pile_state,
-            "chargingSession": session.to_dict() if session else None,
-            "state": self._derive_state(request, waiting_car, pile_state, session),
+            "vehicles": vehicles,
+            "totalActive": len(vehicles),
+            "maxAllowed": MAX_ACTIVE_REQUESTS_PER_USER,
+            "request": primary["request"] if primary else None,
+            "waitingCar": primary["waitingCar"] if primary else None,
+            "pileQueue": primary["pileQueue"] if primary else None,
+            "chargingSession": primary["chargingSession"] if primary else None,
+            "state": primary["state"] if primary else "IDLE",
         }
 
     def query_queue_state(self):
@@ -136,14 +150,24 @@ class QueueService:
             "piles": [pile.to_dict() for pile in pile_management_service.list_piles()],
         }
 
-    def get_queue_ahead_count(self, user_id: str):
-        """计算用户前方等待车辆数，用于客户端展示排队进度。"""
-        waiting = self.waiting_queue.get_by_user(user_id)
+    def get_queue_ahead_count(self, user_id: str, request_id: str | None = None):
+        """计算指定请求前方等待车辆数；未传 request_id 时兼容旧行为。"""
+        if request_id:
+            return self.get_queue_ahead_count_for_request(request_id)
+        requests = self.list_active_requests(user_id)
+        if not requests:
+            return 0
+        if len(requests) == 1:
+            return self.get_queue_ahead_count_for_request(requests[0].request_id)
+        raise ValueError("requestId is required when user has multiple active requests")
+
+    def get_queue_ahead_count_for_request(self, request_id: str):
+        waiting = self.waiting_queue.get_by_request_id(request_id)
         if waiting:
-            position = self.waiting_queue.position_of(user_id)
+            position = self.waiting_queue.position_of_request(request_id)
             return max(0, (position or 1) - 1)
         from services.scheduling_service import scheduling_service
-        pile_state = scheduling_service.find_user_in_pile_queues(user_id)
+        pile_state = scheduling_service.find_request_in_pile_queues(request_id)
         if not pile_state:
             return 0
         return 0 if pile_state["queuePosition"] == "CHARGING" else 1
@@ -157,6 +181,8 @@ class QueueService:
                     "id": len(rows) + 1,
                     "pileName": pile_id,
                     "userId": queue.charging_car.user_id,
+                    "requestId": queue.charging_car.request_id,
+                    "vehicleLabel": queue.charging_car.vehicle_label,
                     "requestedCharge": queue.charging_car.requested_amount,
                     "queueTime": queue.charging_car.to_dict()["queueTime"],
                     "status": "充电中",
@@ -167,6 +193,8 @@ class QueueService:
                     "id": len(rows) + 1,
                     "pileName": pile_id,
                     "userId": queue.waiting_car.user_id,
+                    "requestId": queue.waiting_car.request_id,
+                    "vehicleLabel": queue.waiting_car.vehicle_label,
                     "requestedCharge": queue.waiting_car.requested_amount,
                     "queueTime": queue.waiting_car.to_dict()["queueTime"],
                     "status": "排队中 第1位",
@@ -177,6 +205,8 @@ class QueueService:
                 "id": len(rows) + 1,
                 "pileName": "等待区",
                 "userId": car.user_id,
+                "requestId": car.request_id,
+                "vehicleLabel": car.vehicle_label,
                 "requestedCharge": car.requested_amount,
                 "queueTime": car.to_dict()["queueTime"],
                 "status": "等待中",
@@ -193,6 +223,8 @@ class QueueService:
         if queue.waiting_car:
             waiting.append({
                 "username": queue.waiting_car.user_id,
+                "requestId": queue.waiting_car.request_id,
+                "vehicleLabel": queue.waiting_car.vehicle_label,
                 "requestedCharge": queue.waiting_car.requested_amount,
                 "queueTime": queue.waiting_car.to_dict()["queueTime"],
             })
@@ -220,19 +252,62 @@ class QueueService:
             request.mark_charging()
             self._save_request_to_database(request)
 
-    def mark_completed_by_user(self, user_id: str):
-        request_id = self.active_request_by_user.pop(user_id, None)
-        request = self.get_request(request_id) if request_id else self._get_active_request_from_database(user_id)
+    def mark_completed_by_request(self, request_id: str):
+        request = self.get_request(request_id)
         if request:
             request.mark_completed()
-            self.requests_by_id[request.request_id] = request
+            self._untrack_active_request(request)
             self._save_request_to_database(request)
 
-    def _get_active_request_for_user(self, user_id: str):
-        request = self._get_cached_or_database_active_request(user_id)
-        if not request:
+    def mark_completed_by_user(self, user_id: str):
+        """兼容旧接口：仅当用户只剩一个活跃请求时可用。"""
+        request_ids = self._list_active_request_ids(user_id)
+        if len(request_ids) != 1:
+            raise ValueError("requestId is required when user has multiple active requests")
+        self.mark_completed_by_request(request_ids[0])
+
+    def _build_request_state(self, request: ChargingRequest):
+        waiting_car = self.waiting_queue.get_by_request_id(request.request_id)
+        from services.scheduling_service import scheduling_service
+        from services.charging_session_service import charging_session_service
+        pile_state = scheduling_service.find_request_in_pile_queues(request.request_id)
+        session = charging_session_service.get_request_active_session(request.request_id)
+        return {
+            "request": request.to_dict(),
+            "waitingCar": waiting_car.to_dict() if waiting_car else None,
+            "pileQueue": pile_state,
+            "chargingSession": session.to_dict() if session else None,
+            "aheadCount": self.get_queue_ahead_count_for_request(request.request_id),
+            "state": self._derive_state(request, waiting_car, pile_state, session),
+        }
+
+    def _list_active_request_ids(self, user_id: str) -> list[str]:
+        cached = sorted(self.active_requests_by_user.get(user_id, set()))
+        if cached:
+            return cached
+        try:
+            requests = self.repository.list_active_requests_by_user(user_id)
+        except Exception:
+            requests = []
+        for request in requests:
+            self._cache_request(request)
+        return sorted(self.active_requests_by_user.get(user_id, set()))
+
+    def _get_active_request_for_user(self, user_id: str, request_id: str | None = None):
+        if request_id:
+            request = self.get_request(request_id)
+            if not request or request.user_id != user_id:
+                raise ValueError("request not found")
+            if request.status in ("COMPLETED", "CANCELLED"):
+                raise ValueError("active request not found")
+            return request
+
+        request_ids = self._list_active_request_ids(user_id)
+        if not request_ids:
             raise ValueError("active request not found")
-        return request
+        if len(request_ids) > 1:
+            raise ValueError("requestId is required when user has multiple active requests")
+        return self.get_request(request_ids[0])
 
     def _ensure_modifiable(self, request: ChargingRequest):
         if request.status != "WAITING":
@@ -257,22 +332,6 @@ class QueueService:
         except Exception:
             pass
 
-    def _get_cached_or_database_active_request(self, user_id: str):
-        request_id = self.active_request_by_user.get(user_id)
-        request = self.requests_by_id.get(request_id) if request_id else None
-        if request:
-            return request
-        request = self._get_active_request_from_database(user_id)
-        if request:
-            self._cache_request(request)
-        return request
-
-    def _get_active_request_from_database(self, user_id: str):
-        try:
-            return self.repository.get_active_request_by_user(user_id)
-        except Exception:
-            return None
-
     def _get_request_from_database(self, request_id: str):
         if not request_id:
             return None
@@ -282,16 +341,26 @@ class QueueService:
             return None
 
     def _save_request_to_database(self, request: ChargingRequest):
-        """MySQL 可用时同步请求状态；失败时继续使用内存数据。"""
         try:
             self.repository.save_request(request)
         except Exception:
             pass
 
+    def _track_active_request(self, request: ChargingRequest):
+        self.active_requests_by_user.setdefault(request.user_id, set()).add(request.request_id)
+
+    def _untrack_active_request(self, request: ChargingRequest):
+        active = self.active_requests_by_user.get(request.user_id)
+        if not active:
+            return
+        active.discard(request.request_id)
+        if not active:
+            self.active_requests_by_user.pop(request.user_id, None)
+
     def _cache_request(self, request: ChargingRequest):
         self.requests_by_id[request.request_id] = request
         if request.status not in ("COMPLETED", "CANCELLED"):
-            self.active_request_by_user[request.user_id] = request.request_id
+            self._track_active_request(request)
 
 
 queue_service = QueueService()

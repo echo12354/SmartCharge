@@ -19,6 +19,8 @@ PILE_POWER = {
 
 # 等候区容量 N：车辆提交请求后，先进入等候区等待叫号。
 WAITING_QUEUE_CAPACITY = 6
+# 单个用户可同时持有的未完成充电请求上限（对应多辆车场景）。
+MAX_ACTIVE_REQUESTS_PER_USER = 10
 # 充电桩队列长度 M：当前实现为 1 个充电位 + 1 个等待位。
 PILE_QUEUE_CAPACITY = 2
 

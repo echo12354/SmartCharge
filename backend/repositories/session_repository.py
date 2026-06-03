@@ -60,6 +60,24 @@ class SessionRepository:
     def get_active_session_by_pile(self, pile_id: str) -> ChargingSession | None:
         return self._get_active_session("pile_id", pile_id)
 
+    def get_active_session_by_request(self, request_id: str) -> ChargingSession | None:
+        return self._get_active_session("request_id", request_id)
+
+    def list_active_sessions_by_user(self, user_id: str) -> list[ChargingSession]:
+        with db_cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT session_id, request_id, user_id, pile_id, target_amount,
+                       current_amount, pile_power, status, start_time, end_time, stop_reason
+                FROM charging_sessions
+                WHERE user_id = %s
+                  AND status IN ('PREPARING', 'CHARGING')
+                ORDER BY start_time DESC, session_id DESC
+                """,
+                (user_id,),
+            )
+            return [self._row_to_session(row) for row in cursor.fetchall()]
+
     def list_active_sessions(self) -> list[ChargingSession]:
         with db_cursor() as cursor:
             cursor.execute(
@@ -100,7 +118,7 @@ class SessionRepository:
             return [self._row_to_session(row) for row in cursor.fetchall()]
 
     def _get_active_session(self, column: str, value: str) -> ChargingSession | None:
-        if column not in ("user_id", "pile_id"):
+        if column not in ("user_id", "pile_id", "request_id"):
             raise ValueError("invalid active session column")
         with db_cursor() as cursor:
             cursor.execute(

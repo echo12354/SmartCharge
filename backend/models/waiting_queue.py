@@ -46,6 +46,13 @@ class WaitingQueue:
                 return car
         return None
 
+    def remove_by_request_id(self, request_id: str) -> WaitingCar | None:
+        for car in list(self.cars):
+            if car.request_id == request_id:
+                self.cars.remove(car)
+                return car
+        return None
+
     def remove_car(self, car: WaitingCar) -> bool:
         if car in self.cars:
             self.cars.remove(car)
@@ -54,6 +61,12 @@ class WaitingQueue:
 
     def get_by_user(self, user_id: str) -> WaitingCar | None:
         return next((car for car in self.cars if car.user_id == user_id), None)
+
+    def get_by_request_id(self, request_id: str) -> WaitingCar | None:
+        return next((car for car in self.cars if car.request_id == request_id), None)
+
+    def cars_by_user(self, user_id: str) -> list[WaitingCar]:
+        return [car for car in self.cars if car.user_id == user_id]
 
     def cars_by_mode(self, mode: str) -> list[WaitingCar]:
         """按充电模式取车，并保持先到先服务顺序。"""
@@ -64,6 +77,12 @@ class WaitingQueue:
 
     def position_of(self, user_id: str) -> int | None:
         car = self.get_by_user(user_id)
+        if not car:
+            return None
+        return self.position_of_request(car.request_id)
+
+    def position_of_request(self, request_id: str) -> int | None:
+        car = self.get_by_request_id(request_id)
         if not car:
             return None
         same_mode = self.cars_by_mode(car.charge_mode)

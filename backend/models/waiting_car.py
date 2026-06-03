@@ -18,6 +18,7 @@ class WaitingCar:
     request_id: str
     charge_mode: str
     requested_amount: float
+    vehicle_label: str = ""
     queue_number: str = ""
     queue_position: str = "WAITING_AREA"
     assigned_pile_id: str | None = None
@@ -31,6 +32,7 @@ class WaitingCar:
         return {
             "userId": self.user_id,
             "requestId": self.request_id,
+            "vehicleLabel": self.vehicle_label,
             "chargeMode": self.charge_mode,
             "requestedAmount": self.requested_amount,
             "queueNumber": self.queue_number,

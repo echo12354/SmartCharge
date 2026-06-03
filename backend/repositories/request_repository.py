@@ -47,6 +47,21 @@ class RequestRepository:
             row = cursor.fetchone()
             return self._row_to_request(row) if row else None
 
+    def list_active_requests_by_user(self, user_id: str) -> list[ChargingRequest]:
+        with db_cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT request_id, user_id, charge_mode, requested_amount, status,
+                       queue_number, assigned_pile_id, created_at, updated_at
+                FROM charging_requests
+                WHERE user_id = %s
+                  AND status NOT IN ('COMPLETED', 'CANCELLED')
+                ORDER BY created_at ASC
+                """,
+                (user_id,),
+            )
+            return [self._row_to_request(row) for row in cursor.fetchall()]
+
     def get_active_request_by_user(self, user_id: str) -> ChargingRequest | None:
         with db_cursor() as cursor:
             cursor.execute(

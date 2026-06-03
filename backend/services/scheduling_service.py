@@ -74,7 +74,7 @@ class SchedulingService:
         self._remove_charging_car_without_promotion(pile_queue, session.user_id)
         session, bill = charging_session_service.end_session(session_id, reason)
         from services.queue_service import queue_service
-        queue_service.mark_completed_by_user(session.user_id)
+        queue_service.mark_completed_by_request(session.request_id)
         promoted = pile_queue.promote_waiting_car()
         if promoted:
             self._start_car_session(promoted, session.pile_id)
@@ -93,7 +93,7 @@ class SchedulingService:
                 promoted = pile_queue.promote_waiting_car()
                 if promoted:
                     self._start_car_session(promoted, session.pile_id)
-            queue_service.mark_completed_by_user(session.user_id)
+            queue_service.mark_completed_by_request(session.request_id)
         return closed
 
     def priority_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
@@ -113,6 +113,14 @@ class SchedulingService:
                 removed = car
         return removed
 
+    def remove_request_from_pile_queues(self, request_id: str):
+        removed = None
+        for queue in self.pile_queues.values():
+            car = queue.remove_by_request_id(request_id)
+            if car:
+                removed = car
+        return removed
+
     def find_user_in_pile_queues(self, user_id: str):
         for pile_id, queue in self.pile_queues.items():
             for car in queue.cars():
@@ -120,6 +128,18 @@ class SchedulingService:
                     return {
                         "pileId": pile_id,
                         "queuePosition": car.queue_position,
+                        "car": car.to_dict(),
+                    }
+        return None
+
+    def find_request_in_pile_queues(self, request_id: str):
+        for pile_id, queue in self.pile_queues.items():
+            for car in queue.cars():
+                if car.request_id == request_id:
+                    return {
+                        "pileId": pile_id,
+                        "queuePosition": car.queue_position,
+                        "requestId": request_id,
                         "car": car.to_dict(),
                     }
         return None

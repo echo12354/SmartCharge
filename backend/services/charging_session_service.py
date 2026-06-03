@@ -18,16 +18,22 @@ class ChargingSessionService:
     def __init__(self):
         self.active_sessions: dict[str, ChargingSession] = {}
         self.completed_sessions: dict[str, ChargingSession] = {}
-        self.user_active_session: dict[str, str] = {}
+        self.user_active_sessions: dict[str, set[str]] = {}
+        self.request_active_session: dict[str, str] = {}
         self.pile_active_session: dict[str, str] = {}
         self.repository = SessionRepository()
         self._load_active_sessions_from_database()
 
     def create_and_start(self, user_id: str, pile_id: str, amount: float, request_id: str | None = None):
-        """创建并启动充电会话，同一用户和同一充电桩不能重复开启活跃会话。"""
-        active = self.get_user_active_session(user_id)
-        if active:
-            return active
+        """创建并启动充电会话。同一 request_id 不能重复开启；同一用户可在不同桩上同时充电。"""
+        if request_id:
+            existing = self.get_request_active_session(request_id)
+            if existing:
+                return existing
+        else:
+            active = self.get_user_active_session(user_id)
+            if active:
+                return active
         pile_active = self.get_pile_active_session(pile_id)
         if pile_active:
             raise ValueError("pile already has active session")
@@ -43,8 +49,7 @@ class ChargingSessionService:
         )
         session.start()
         self.active_sessions[session.session_id] = session
-        self.user_active_session[user_id] = session.session_id
-        self.pile_active_session[pile_id] = session.session_id
+        self._track_active_session(session)
         self._save_session_to_database(session)
         pile_management_service.mark_charging(pile_id, session.session_id)
         return session
@@ -57,10 +62,36 @@ class ChargingSessionService:
         return self.active_sessions.get(session_id) or self.completed_sessions.get(session_id)
 
     def get_user_active_session(self, user_id: str):
-        session_id = self.user_active_session.get(user_id)
+        sessions = self.get_user_active_sessions(user_id)
+        if not sessions:
+            return None
+        if len(sessions) > 1:
+            return sessions[0]
+        return sessions[0]
+
+    def get_user_active_sessions(self, user_id: str):
+        session_ids = self.user_active_sessions.get(user_id, set())
+        sessions = []
+        for session_id in session_ids:
+            session = self.active_sessions.get(session_id)
+            if session:
+                session.refresh_progress()
+                sessions.append(session)
+        if sessions:
+            return sessions
+        db_sessions = self._list_active_sessions_by_user_from_database(user_id)
+        if db_sessions:
+            for session in db_sessions:
+                session.refresh_progress()
+                self._cache_session(session)
+            return db_sessions
+        return []
+
+    def get_request_active_session(self, request_id: str):
+        session_id = self.request_active_session.get(request_id)
         session = self.active_sessions.get(session_id) if session_id else None
         if not session:
-            session = self._get_active_session_by_user_from_database(user_id)
+            session = self._get_active_session_by_request_from_database(request_id)
             if session:
                 self._cache_session(session)
         if session:
@@ -115,9 +146,9 @@ class ChargingSessionService:
                 self._cache_session(session)
             return sessions
         items = [s for s in self.completed_sessions.values() if s.user_id == user_id]
-        active = self.get_user_active_session(user_id)
+        active = self.get_user_active_sessions(user_id)
         if active:
-            items.insert(0, active)
+            items = active + items
         return sorted(items, key=lambda s: s.start_time or s.end_time, reverse=True)
 
     def list_active_sessions(self):
@@ -156,9 +187,25 @@ class ChargingSessionService:
 
     def _archive_session(self, session: ChargingSession):
         self.active_sessions.pop(session.session_id, None)
-        self.user_active_session.pop(session.user_id, None)
-        self.pile_active_session.pop(session.pile_id, None)
+        self._untrack_active_session(session)
         self.completed_sessions[session.session_id] = session
+
+    def _track_active_session(self, session: ChargingSession):
+        self.user_active_sessions.setdefault(session.user_id, set()).add(session.session_id)
+        self.pile_active_session[session.pile_id] = session.session_id
+        if session.request_id:
+            self.request_active_session[session.request_id] = session.session_id
+
+    def _untrack_active_session(self, session: ChargingSession):
+        active = self.user_active_sessions.get(session.user_id)
+        if active:
+            active.discard(session.session_id)
+            if not active:
+                self.user_active_sessions.pop(session.user_id, None)
+        if self.pile_active_session.get(session.pile_id) == session.session_id:
+            self.pile_active_session.pop(session.pile_id, None)
+        if session.request_id:
+            self.request_active_session.pop(session.request_id, None)
 
     def _load_active_sessions_from_database(self):
         sessions = self._list_active_sessions_from_database()
@@ -171,12 +218,10 @@ class ChargingSessionService:
         """按会话状态放入活跃区或历史区，保持内存兜底可用。"""
         if session.status in ("PREPARING", "CHARGING"):
             self.active_sessions[session.session_id] = session
-            self.user_active_session[session.user_id] = session.session_id
-            self.pile_active_session[session.pile_id] = session.session_id
+            self._track_active_session(session)
         else:
             self.active_sessions.pop(session.session_id, None)
-            self.user_active_session.pop(session.user_id, None)
-            self.pile_active_session.pop(session.pile_id, None)
+            self._untrack_active_session(session)
             self.completed_sessions[session.session_id] = session
 
     def _save_session_to_database(self, session: ChargingSession):
@@ -192,8 +237,18 @@ class ChargingSessionService:
             return None
 
     def _get_active_session_by_user_from_database(self, user_id: str):
+        sessions = self._list_active_sessions_by_user_from_database(user_id)
+        return sessions[0] if sessions else None
+
+    def _list_active_sessions_by_user_from_database(self, user_id: str):
         try:
-            return self.repository.get_active_session_by_user(user_id)
+            return self.repository.list_active_sessions_by_user(user_id)
+        except Exception:
+            return []
+
+    def _get_active_session_by_request_from_database(self, request_id: str):
+        try:
+            return self.repository.get_active_session_by_request(request_id)
         except Exception:
             return None
 
