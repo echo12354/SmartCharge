@@ -21,6 +21,8 @@ class SchedulingService:
         self.decisions: list[DispatchDecision] = []
         self.repository = DispatchRepository()
         self.engine_running = True
+        self.dispatch_paused = False
+        self.fault_priority_queue: list[WaitingCar] = []
         self._load_recent_decisions_from_database()
 
     def dispatch_waiting_cars(self):
@@ -31,6 +33,13 @@ class SchedulingService:
         if not self.engine_running:
             return self.get_statistics()
         self.refresh_finished_sessions()
+        if self.fault_priority_queue:
+            self.dispatch_fault_priority_queue()
+            if self.fault_priority_queue:
+                return self.get_statistics()
+            self.dispatch_paused = False
+        if self.dispatch_paused:
+            return self.get_statistics()
         from services.queue_service import queue_service
         for mode in ("fast", "slow"):
             while True:
@@ -74,8 +83,9 @@ class SchedulingService:
         self._remove_charging_car_without_promotion(pile_queue, session.user_id)
         session, bill = charging_session_service.end_session(session_id, reason)
         from services.queue_service import queue_service
-        queue_service.mark_completed_by_request(session.request_id)
-        promoted = pile_queue.promote_waiting_car()
+        queue_service.mark_completed_by_user(session.user_id)
+        fault_car = self._dispatch_fault_priority_car_to_pile(session.pile_id)
+        promoted = None if fault_car else pile_queue.promote_waiting_car()
         if promoted:
             self._start_car_session(promoted, session.pile_id)
         self.dispatch_waiting_cars()
@@ -90,20 +100,48 @@ class SchedulingService:
             pile_queue = self.pile_queues.get(session.pile_id)
             if pile_queue:
                 self._remove_charging_car_without_promotion(pile_queue, session.user_id)
-                promoted = pile_queue.promote_waiting_car()
+                fault_car = self._dispatch_fault_priority_car_to_pile(session.pile_id)
+                promoted = None if fault_car else pile_queue.promote_waiting_car()
                 if promoted:
                     self._start_car_session(promoted, session.pile_id)
-            queue_service.mark_completed_by_request(session.request_id)
+                if not self.fault_priority_queue:
+                    self.dispatch_paused = False
+            queue_service.mark_completed_by_user(session.user_id)
         return closed
 
     def priority_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
         """故障场景的优先级调度入口，优先处理故障桩转移出来的车辆。"""
         return self._dispatch_specific_cars(cars, candidate_piles, "PRIORITY")
 
+    def add_fault_priority_cars(self, cars: list[WaitingCar]):
+        """故障优先队列保存故障桩转移出的车辆，普通等候区叫号必须让位。"""
+        for car in cars:
+            if car not in self.fault_priority_queue:
+                self.fault_priority_queue.append(car)
+
+    def dispatch_fault_priority_queue(self, candidate_piles: list[str] | None = None):
+        """优先把故障队列车辆安排到同类型可用桩，不打断正在充电车辆。"""
+        if not self.fault_priority_queue:
+            return []
+        candidates = candidate_piles or self._candidate_piles_for_fault_queue()
+        dispatched = []
+        for car in list(self.fault_priority_queue):
+            matching_piles = [pile_id for pile_id in candidates if self._pile_matches_car(pile_id, car)]
+            car_dispatched = self.priority_dispatch([car], matching_piles)
+            if car_dispatched:
+                self.fault_priority_queue.remove(car)
+                dispatched.extend(car_dispatched)
+        return dispatched
+
     def time_sequence_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
         """故障场景的时间顺序调度入口，按 F/T 排队号重新排序后调度。"""
         ordered = sorted(cars, key=lambda car: self._queue_number_sort_key(car.queue_number))
         return self._dispatch_specific_cars(ordered, candidate_piles, "TIME_SEQUENCE")
+
+    def recovery_time_sequence_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
+        """故障恢复后按原排队号重新分配等待车辆，策略单独记录为恢复调度。"""
+        ordered = sorted(cars, key=lambda car: self._queue_number_sort_key(car.queue_number))
+        return self._dispatch_specific_cars(ordered, candidate_piles, "RECOVERY_TIME_SEQUENCE")
 
     def remove_user_from_pile_queues(self, user_id: str):
         removed = None
@@ -112,7 +150,6 @@ class SchedulingService:
             if car:
                 removed = car
         return removed
-
     def remove_request_from_pile_queues(self, request_id: str):
         removed = None
         for queue in self.pile_queues.values():
@@ -120,7 +157,6 @@ class SchedulingService:
             if car:
                 removed = car
         return removed
-
     def find_user_in_pile_queues(self, user_id: str):
         for pile_id, queue in self.pile_queues.items():
             for car in queue.cars():
@@ -131,7 +167,6 @@ class SchedulingService:
                         "car": car.to_dict(),
                     }
         return None
-
     def find_request_in_pile_queues(self, request_id: str):
         for pile_id, queue in self.pile_queues.items():
             for car in queue.cars():
@@ -141,9 +176,8 @@ class SchedulingService:
                         "queuePosition": car.queue_position,
                         "requestId": request_id,
                         "car": car.to_dict(),
-                    }
+                   }
         return None
-
     def get_all_pile_queues(self):
         return {pile_id: queue.to_dict() for pile_id, queue in self.pile_queues.items()}
 
@@ -231,6 +265,7 @@ class SchedulingService:
                 if not pile or not pile.is_enabled or not queue or not queue.has_space():
                     continue
                 queue.add_car(car)
+                self._mark_car_dispatched(car, pile_id)
                 if car.queue_position == "CHARGING":
                     self._start_car_session(car, pile_id)
                 decision = DispatchDecision(
@@ -245,6 +280,43 @@ class SchedulingService:
                 dispatched.append(car)
                 break
         return dispatched
+
+    def _dispatch_fault_priority_car_to_pile(self, pile_id: str):
+        pile = pile_management_service.get_pile(pile_id)
+        queue = self.pile_queues.get(pile_id)
+        if not pile or not pile.is_enabled or not queue or not queue.has_space():
+            return None
+        for car in list(self.fault_priority_queue):
+            if not self._pile_matches_car(pile_id, car):
+                continue
+            dispatched = self._dispatch_specific_cars([car], [pile_id], "PRIORITY")
+            if dispatched:
+                self.fault_priority_queue.remove(car)
+                return car
+        return None
+
+    @staticmethod
+    def _pile_matches_car(pile_id: str, car: WaitingCar):
+        return (car.charge_mode == "fast" and pile_id in FAST_PILES) or (
+            car.charge_mode == "slow" and pile_id in SLOW_PILES
+        )
+
+    def _candidate_piles_for_fault_queue(self):
+        modes = {car.charge_mode for car in self.fault_priority_queue}
+        candidates = []
+        if "fast" in modes:
+            candidates.extend(FAST_PILES)
+        if "slow" in modes:
+            candidates.extend(SLOW_PILES)
+        return candidates
+
+    @staticmethod
+    def _mark_car_dispatched(car: WaitingCar, pile_id: str):
+        try:
+            from services.queue_service import queue_service
+            queue_service.mark_dispatched(car, pile_id)
+        except Exception:
+            pass
 
     def _require_pile_queue(self, pile_id: str):
         queue = self.pile_queues.get(pile_id)
