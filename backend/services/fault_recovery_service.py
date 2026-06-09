@@ -47,6 +47,8 @@ class FaultRecoveryService:
                     queue.charging_car.queue_position = "WAITING_AREA"
                     queue.charging_car.assigned_pile_id = None
                     requeue_cars.append(queue.charging_car)
+                else:
+                    self._mark_completed_by_user(queue.charging_car.user_id)
 
         if queue.waiting_car:
             queue.waiting_car.queue_position = "WAITING_AREA"
@@ -58,12 +60,20 @@ class FaultRecoveryService:
         pile_management_service.mark_fault(pile_id)
 
         candidate_piles = self._same_type_piles_except(pile_id)
-        if strategy == "time":
-            dispatched = scheduling_service.time_sequence_dispatch(requeue_cars, candidate_piles)
+        strategy_key = (strategy or "priority").lower()
+        scheduling_service.dispatch_paused = True
+        if strategy_key in ("time", "time_sequence", "time-sequence"):
+            waiting_cars = self._collect_waiting_cars_from_piles(candidate_piles)
+            pending_cars = requeue_cars + waiting_cars
+            dispatched = scheduling_service.time_sequence_dispatch(pending_cars, candidate_piles)
+            self._put_not_dispatched_back(pending_cars, dispatched)
         else:
-            dispatched = scheduling_service.priority_dispatch(requeue_cars, candidate_piles)
+            scheduling_service.add_fault_priority_cars(requeue_cars)
+            dispatched = scheduling_service.dispatch_fault_priority_queue(candidate_piles)
 
-        self._put_not_dispatched_back(requeue_cars, dispatched)
+        if not scheduling_service.fault_priority_queue:
+            scheduling_service.dispatch_paused = False
+            scheduling_service.dispatch_waiting_cars()
         return record, dispatched
 
     def recover_pile(self, pile_id: str):
@@ -76,25 +86,33 @@ class FaultRecoveryService:
             self.records[record.fault_id] = record
             self.latest_fault_by_pile[pile_id] = record.fault_id
             self._save_record_to_database(record)
-        moved_cars = self._collect_waiting_cars_from_same_type_piles(pile_id)
+        moved_cars = self._collect_waiting_cars_from_piles(self._same_type_piles_except(pile_id))
         candidate_piles = self._same_type_piles_including(pile_id)
-        dispatched = scheduling_service.time_sequence_dispatch(moved_cars, candidate_piles)
+        scheduling_service.dispatch_paused = bool(moved_cars)
+        dispatched = scheduling_service.recovery_time_sequence_dispatch(moved_cars, candidate_piles)
         self._put_not_dispatched_back(moved_cars, dispatched)
+        scheduling_service.dispatch_paused = False
         scheduling_service.dispatch_waiting_cars()
         return record, dispatched
 
     def priority_dispatch(self, pile_id: str):
         """优先级调度：优先安排故障影响范围内被转移出来的车辆。"""
         cars = self._collect_waiting_cars_from_same_type_piles(pile_id)
-        dispatched = scheduling_service.priority_dispatch(cars, self._same_type_piles_including(pile_id))
-        self._put_not_dispatched_back(cars, dispatched)
+        scheduling_service.dispatch_paused = True
+        scheduling_service.add_fault_priority_cars(cars)
+        dispatched = scheduling_service.dispatch_fault_priority_queue(self._same_type_piles_including(pile_id))
+        if not scheduling_service.fault_priority_queue:
+            scheduling_service.dispatch_paused = False
+            scheduling_service.dispatch_waiting_cars()
         return dispatched
 
     def time_sequence_dispatch(self, pile_id: str):
         """时间顺序调度：按排队号先后顺序重新安排同类型车辆。"""
         cars = self._collect_waiting_cars_from_same_type_piles(pile_id)
+        scheduling_service.dispatch_paused = bool(cars)
         dispatched = scheduling_service.time_sequence_dispatch(cars, self._same_type_piles_including(pile_id))
         self._put_not_dispatched_back(cars, dispatched)
+        scheduling_service.dispatch_paused = False
         return dispatched
 
     def list_records(self):
@@ -114,8 +132,12 @@ class FaultRecoveryService:
         return list(FAST_PILES if pile_id in FAST_PILES else SLOW_PILES)
 
     def _collect_waiting_cars_from_same_type_piles(self, pile_id: str):
+        return self._collect_waiting_cars_from_piles(self._same_type_piles_including(pile_id))
+
+    @staticmethod
+    def _collect_waiting_cars_from_piles(pile_ids: list[str]):
         cars = []
-        for candidate in self._same_type_piles_including(pile_id):
+        for candidate in pile_ids:
             queue = scheduling_service.pile_queues[candidate]
             if queue.waiting_car:
                 car = queue.waiting_car
@@ -132,7 +154,18 @@ class FaultRecoveryService:
         dispatched_set = set(id(car) for car in dispatched)
         for car in cars:
             if id(car) not in dispatched_set and not queue_service.waiting_queue.get_by_user(car.user_id):
-                queue_service.waiting_queue.add_car(car)
+                car.queue_position = "WAITING_AREA"
+                car.assigned_pile_id = None
+                if queue_service.waiting_queue.has_space():
+                    queue_service.waiting_queue.cars.append(car)
+
+    @staticmethod
+    def _mark_completed_by_user(user_id: str):
+        try:
+            from services.queue_service import queue_service
+            queue_service.mark_completed_by_user(user_id)
+        except Exception:
+            pass
 
     def _load_records_from_database(self):
         records = self._list_records_from_database()
