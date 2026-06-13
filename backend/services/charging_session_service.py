@@ -1,0 +1,280 @@
+"""充电会话服务。
+
+负责车辆开始充电、查询充电状态、结束充电以及生成账单前的会话归档。
+"""
+
+from models.charging_session import ChargingSession
+from repositories.session_repository import SessionRepository
+from services.billing_service import billing_service
+from services.pile_management_service import pile_management_service
+
+
+class ChargingSessionService:
+    """管理活跃会话和历史会话。
+
+    MySQL 可用时优先读取会话状态；数据库不可用时继续使用内存中的会话字典。
+    """
+
+    def __init__(self):
+        self.active_sessions: dict[str, ChargingSession] = {}
+        self.completed_sessions: dict[str, ChargingSession] = {}
+        self.user_active_sessions: dict[str, set[str]] = {}
+        self.request_active_session: dict[str, str] = {}
+        self.pile_active_session: dict[str, str] = {}
+        self.repository = SessionRepository()
+        self._load_active_sessions_from_database()
+
+    def create_and_start(self, user_id: str, pile_id: str, amount: float, request_id: str | None = None):
+        """创建并启动充电会话。同一 request_id 不能重复开启；同一用户可在不同桩上同时充电。"""
+        if request_id:
+            existing = self.get_request_active_session(request_id)
+            if existing:
+                return existing
+        else:
+            active = self.get_user_active_session(user_id)
+            if active:
+                return active
+        pile_active = self.get_pile_active_session(pile_id)
+        if pile_active:
+            raise ValueError("pile already has active session")
+        pile = pile_management_service.get_pile(pile_id)
+        if not pile or not pile.is_enabled:
+            raise ValueError("pile is not available")
+        session = ChargingSession(
+            user_id=user_id,
+            pile_id=pile_id,
+            target_amount=float(amount),
+            pile_power=pile.power,
+            request_id=request_id,
+        )
+        session.start()
+        self.active_sessions[session.session_id] = session
+        self._track_active_session(session)
+        self._save_session_to_database(session)
+        pile_management_service.mark_charging(pile_id, session.session_id)
+        return session
+
+    def get_session(self, session_id: str):
+        session = self._get_session_from_database(session_id)
+        if session:
+            self._cache_session(session)
+            return session
+        return self.active_sessions.get(session_id) or self.completed_sessions.get(session_id)
+
+    def get_user_active_session(self, user_id: str):
+        sessions = self.get_user_active_sessions(user_id)
+        if not sessions:
+            return None
+        if len(sessions) > 1:
+            return sessions[0]
+        return sessions[0]
+
+    def get_user_active_sessions(self, user_id: str):
+        session_ids = self.user_active_sessions.get(user_id, set())
+        sessions = []
+        for session_id in session_ids:
+            session = self.active_sessions.get(session_id)
+            if session:
+                session.refresh_progress()
+                sessions.append(session)
+        if sessions:
+            return sessions
+        db_sessions = self._list_active_sessions_by_user_from_database(user_id)
+        if db_sessions:
+            for session in db_sessions:
+                session.refresh_progress()
+                self._cache_session(session)
+            return db_sessions
+        return []
+
+    def get_request_active_session(self, request_id: str):
+        session_id = self.request_active_session.get(request_id)
+        session = self.active_sessions.get(session_id) if session_id else None
+        if not session:
+            session = self._get_active_session_by_request_from_database(request_id)
+            if session:
+                self._cache_session(session)
+        if session:
+            session.refresh_progress()
+            self._save_session_to_database(session)
+        return session
+
+    def get_pile_active_session(self, pile_id: str):
+        session_id = self.pile_active_session.get(pile_id)
+        session = self.active_sessions.get(session_id) if session_id else None
+        if not session:
+            session = self._get_active_session_by_pile_from_database(pile_id)
+            if session:
+                self._cache_session(session)
+        return session
+
+    def end_session(self, session_id: str, reason: str = "manual stop"):
+        """结束活跃会话，更新充电桩统计并生成账单。"""
+        session = self.active_sessions.get(session_id) or self._get_session_from_database(session_id)
+        if not session:
+            raise ValueError("active session not found")
+        if session.status not in ("PREPARING", "CHARGING"):
+            raise ValueError("active session not found")
+        session.refresh_progress()
+        if session.status != "COMPLETED":
+            session.stop(reason)
+        self._save_session_to_database(session)
+        self._archive_session(session)
+        pile_management_service.add_statistics(session.pile_id, session.current_amount, session.duration_hours())
+        pile_management_service.mark_available(session.pile_id)
+        bill = billing_service.create_bill(session)
+        return session, bill
+
+    def close_completed_sessions(self):
+        """定期归档已自动充满的会话，并为其生成账单。"""
+        closed = []
+        for session_id, session in list(self.active_sessions.items()):
+            session.refresh_progress()
+            if session.status == "COMPLETED":
+                self._save_session_to_database(session)
+                self._archive_session(session)
+                pile_management_service.add_statistics(session.pile_id, session.current_amount, session.duration_hours())
+                pile_management_service.mark_available(session.pile_id)
+                bill = billing_service.create_bill(session)
+                closed.append((session, bill))
+        return closed
+
+    def list_user_sessions(self, user_id: str):
+        sessions = self._list_user_sessions_from_database(user_id)
+        if sessions is not None:
+            for session in sessions:
+                self._cache_session(session)
+            return sessions
+        items = [s for s in self.completed_sessions.values() if s.user_id == user_id]
+        active = self.get_user_active_sessions(user_id)
+        if active:
+            items = active + items
+        return sorted(items, key=lambda s: s.start_time or s.end_time, reverse=True)
+
+    def list_active_sessions(self):
+        sessions = self._list_active_sessions_from_database()
+        if sessions is not None:
+            for session in sessions:
+                session.refresh_progress()
+                self._cache_session(session)
+                self._save_session_to_database(session)
+            return sessions
+        for session in self.active_sessions.values():
+            session.refresh_progress()
+        return list(self.active_sessions.values())
+
+    def list_all_sessions(self):
+        sessions = self._list_all_sessions_from_database()
+        if sessions is not None:
+            for session in sessions:
+                self._cache_session(session)
+            return sessions
+        sessions = list(self.active_sessions.values()) + list(self.completed_sessions.values())
+        for session in sessions:
+            session.refresh_progress()
+        return sorted(sessions, key=lambda s: s.start_time or s.end_time, reverse=True)
+
+    def get_statistics(self):
+        from services.billing_service import billing_service
+        bills = billing_service.list_all_bills()
+        return {
+            "activeSessions": len(self.active_sessions),
+            "completedSessions": len(self.completed_sessions),
+            "totalSessions": len(self.active_sessions) + len(self.completed_sessions),
+            "totalEnergy": round(sum(bill.energy_amount for bill in bills), 2),
+            "totalCost": round(sum(bill.total_fee for bill in bills), 2),
+        }
+
+    def _archive_session(self, session: ChargingSession):
+        self.active_sessions.pop(session.session_id, None)
+        self._untrack_active_session(session)
+        self.completed_sessions[session.session_id] = session
+
+    def _track_active_session(self, session: ChargingSession):
+        self.user_active_sessions.setdefault(session.user_id, set()).add(session.session_id)
+        self.pile_active_session[session.pile_id] = session.session_id
+        if session.request_id:
+            self.request_active_session[session.request_id] = session.session_id
+
+    def _untrack_active_session(self, session: ChargingSession):
+        active = self.user_active_sessions.get(session.user_id)
+        if active:
+            active.discard(session.session_id)
+            if not active:
+                self.user_active_sessions.pop(session.user_id, None)
+        if self.pile_active_session.get(session.pile_id) == session.session_id:
+            self.pile_active_session.pop(session.pile_id, None)
+        if session.request_id:
+            self.request_active_session.pop(session.request_id, None)
+
+    def _load_active_sessions_from_database(self):
+        sessions = self._list_active_sessions_from_database()
+        if sessions is None:
+            return
+        for session in sessions:
+            self._cache_session(session)
+
+    def _cache_session(self, session: ChargingSession):
+        """按会话状态放入活跃区或历史区，保持内存兜底可用。"""
+        if session.status in ("PREPARING", "CHARGING"):
+            self.active_sessions[session.session_id] = session
+            self._track_active_session(session)
+        else:
+            self.active_sessions.pop(session.session_id, None)
+            self._untrack_active_session(session)
+            self.completed_sessions[session.session_id] = session
+
+    def _save_session_to_database(self, session: ChargingSession):
+        try:
+            self.repository.save_session(session)
+        except Exception:
+            pass
+
+    def _get_session_from_database(self, session_id: str):
+        try:
+            return self.repository.get_session(session_id)
+        except Exception:
+            return None
+
+    def _get_active_session_by_user_from_database(self, user_id: str):
+        sessions = self._list_active_sessions_by_user_from_database(user_id)
+        return sessions[0] if sessions else None
+
+    def _list_active_sessions_by_user_from_database(self, user_id: str):
+        try:
+            return self.repository.list_active_sessions_by_user(user_id)
+        except Exception:
+            return []
+
+    def _get_active_session_by_request_from_database(self, request_id: str):
+        try:
+            return self.repository.get_active_session_by_request(request_id)
+        except Exception:
+            return None
+
+    def _get_active_session_by_pile_from_database(self, pile_id: str):
+        try:
+            return self.repository.get_active_session_by_pile(pile_id)
+        except Exception:
+            return None
+
+    def _list_active_sessions_from_database(self):
+        try:
+            return self.repository.list_active_sessions()
+        except Exception:
+            return None
+
+    def _list_user_sessions_from_database(self, user_id: str):
+        try:
+            return self.repository.list_user_sessions(user_id)
+        except Exception:
+            return None
+
+    def _list_all_sessions_from_database(self):
+        try:
+            return self.repository.list_all_sessions()
+        except Exception:
+            return None
+
+
+charging_session_service = ChargingSessionService()
