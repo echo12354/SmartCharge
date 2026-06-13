@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { setApiUsername } from '../api/client'
 import type { User } from '../api/types'
 
 interface AuthContextValue {
@@ -24,6 +25,10 @@ function loadStoredUser(): User | null {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => loadStoredUser())
+
+  useEffect(() => {
+    setApiUsername(user?.username ?? null)
+  }, [user])
 
   const value = useMemo<AuthContextValue>(() => ({
     user,

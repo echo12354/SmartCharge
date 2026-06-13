@@ -13,6 +13,7 @@ from services.pile_management_service import pile_management_service
 from services.queue_service import queue_service
 from services.scheduling_service import scheduling_service
 from services.user_service import user_service
+from utils.auth_helpers import admin_required
 from utils.responses import fail, success
 
 compat_bp = Blueprint("compat", __name__, url_prefix="/api")
@@ -79,6 +80,8 @@ def legacy_charging_request():
             username,
             data.get("chargeType") or data.get("chargeMode"),
             data.get("targetAmount") or data.get("amount"),
+            data.get("vehicleLabel") or data.get("vehicleName") or "",
+            data.get("batteryCapacity"),
         )
         return success("充电请求提交成功", created.to_dict())
     except (ValueError, TypeError) as exc:
@@ -150,6 +153,7 @@ def legacy_ahead_count():
 
 
 @compat_bp.get("/admin/statistics/piles")
+@admin_required
 def legacy_admin_pile_statistics():
     stats = pile_management_service.get_statistics()
     stats["totalQueuedCars"] = len(queue_service.waiting_queue.cars)
@@ -158,6 +162,7 @@ def legacy_admin_pile_statistics():
 
 
 @compat_bp.get("/admin/piles")
+@admin_required
 def legacy_admin_piles():
     piles = []
     for index, pile in enumerate(pile_management_service.list_piles(), start=1):
@@ -171,6 +176,7 @@ def legacy_admin_piles():
 
 
 @compat_bp.post("/admin/piles/<int:pile_id>/status")
+@admin_required
 def legacy_update_pile_status(pile_id):
     pile_char = chr(ord("A") + pile_id - 1)
     data = request.get_json() or {}
@@ -195,16 +201,19 @@ def legacy_update_pile_status(pile_id):
 
 
 @compat_bp.get("/admin/queue")
+@admin_required
 def legacy_admin_queue():
     return success("获取队列信息成功", {"cars": queue_service.get_admin_queue_info()})
 
 
 @compat_bp.get("/admin/reports")
+@admin_required
 def legacy_admin_reports():
     return success("获取报表数据成功", {"reports": pile_management_service.get_reports()})
 
 
 @compat_bp.get("/admin/piles/<int:pile_id>/details")
+@admin_required
 def legacy_pile_details(pile_id):
     pile_char = chr(ord("A") + pile_id - 1)
     pile = pile_management_service.get_pile(pile_char)
@@ -246,11 +255,13 @@ def legacy_pile_queue(pile_id):
 
 
 @compat_bp.post("/dispatch/engine/start")
+@admin_required
 def legacy_start_dispatch_engine():
     return success("调度引擎已启动", scheduling_service.start_engine())
 
 
 @compat_bp.post("/dispatch/engine/stop")
+@admin_required
 def legacy_stop_dispatch_engine():
     return success("调度引擎已停止", scheduling_service.stop_engine())
 
@@ -267,6 +278,7 @@ def legacy_dispatch_engine_status():
 
 
 @compat_bp.get("/admin/dispatch/overview")
+@admin_required
 def legacy_dispatch_overview():
     stats = scheduling_service.get_statistics()
     return success("获取调度概览成功", {
@@ -327,17 +339,20 @@ def legacy_real_time_status():
 
 
 @compat_bp.get("/admin/charging/sessions")
+@admin_required
 def legacy_admin_sessions():
     sessions = [session.to_dict() for session in charging_session_service.list_active_sessions()]
     return success("获取充电会话列表成功", {"sessions": sessions, "totalCount": len(sessions)})
 
 
 @compat_bp.get("/admin/charging/statistics")
+@admin_required
 def legacy_admin_charging_statistics():
     return success("获取充电统计成功", charging_session_service.get_statistics())
 
 
 @compat_bp.post("/admin/charging/session/<session_id>/stop")
+@admin_required
 def legacy_admin_stop_session(session_id):
     return legacy_stop_session(session_id)
 

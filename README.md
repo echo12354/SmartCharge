@@ -114,6 +114,37 @@ VITE_API_BASE_URL=http://localhost:5001
 
 默认测试账号与后端一致：`user / 123`、`admin / 123`。
 
+## 验收用例自动测试（模拟时钟）
+
+已对齐 `作业验收用例.xlsx` 参数：**N=10、M=3、比例尺 1:10、6:00 起算**。启用模拟时钟后，充电进度与费用按**模拟时间**计算（不再依赖真实等待 30 秒）。
+
+### 一键跑完全部事件（推荐）
+
+```bash
+cd backend
+python scripts/run_acceptance_test.py --stop 09:30
+```
+
+单条事件调试：
+
+```bash
+python scripts/run_acceptance_test.py --event 2
+python scripts/run_acceptance_test.py --json --stop 06:05
+```
+
+### HTTP 接口（需先启动 `python app.py`）
+
+```text
+POST /api/acceptance/reset
+POST /api/acceptance/run-all?stopAt=09:30
+POST /api/acceptance/events/2
+POST /api/acceptance/events/next
+GET  /api/acceptance/snapshot
+GET  /api/acceptance/events
+```
+
+`snapshot` 返回与 Excel 列对应的 `快充1/快充2/慢充1/慢充2/慢充3/等候区` 填写格式。
+
 ## 后端运行方法
 
 进入后端目录：

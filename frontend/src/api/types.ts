@@ -34,6 +34,7 @@ export interface ChargingSession {
   pilePower: number
   status: string
   progressPercent: number
+  requestId?: string | null
   startTime: string | null
   endTime: string | null
   durationHours: number
@@ -103,10 +104,61 @@ export interface AdminQueueCar {
   id: number
   pileName: string
   userId: string
+  requestId?: string
+  vehicleLabel?: string
+  chargeMode?: string
   requestedCharge: number
   queueTime: string
   status: string
   statusClass: string
+}
+
+export interface StationSnapshot {
+  simTime: string
+  piles: Record<string, string>
+  waitingArea: string
+  clock?: {
+    enabled?: boolean
+    displayTime?: string
+    currentTime?: string
+    timeScale?: number
+  }
+  lastEventIndex?: number
+}
+
+export interface DispatchOverview {
+  engineStatus: {
+    isRunning: boolean
+    totalDispatched: number
+  }
+  pileQueues: Array<{
+    pileId: string
+    chargingCar: Record<string, unknown> | null
+    waitingCar: Record<string, unknown> | null
+    waitingCars?: Array<Record<string, unknown>>
+    capacity: number
+    availableCapacity: number
+  }>
+  utilizationSummary: Record<string, number>
+  recentDecisions: Array<Record<string, unknown>>
+}
+
+export interface AcceptanceEvent {
+  index: number
+  simTime: string
+  event: string
+}
+
+export interface AcceptanceRunResult {
+  executed: number
+  stopAt: string
+  results: Array<{
+    index: number
+    simTime: string
+    event: string
+    snapshot: StationSnapshot
+  }>
+  finalSnapshot: StationSnapshot
 }
 
 export interface ReportRow {

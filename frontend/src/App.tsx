@@ -8,6 +8,8 @@ import BillsPage from './pages/user/BillsPage'
 import AdminHome from './pages/admin/AdminHome'
 import PilesPage from './pages/admin/PilesPage'
 import QueuePage from './pages/admin/QueuePage'
+import MonitorPage from './pages/admin/MonitorPage'
+import AcceptancePage from './pages/admin/AcceptancePage'
 import ReportsPage from './pages/admin/ReportsPage'
 
 function ProtectedRoute({
@@ -53,8 +55,10 @@ function AppRoutes() {
         )}
       >
         <Route index element={<AdminHome />} />
+        <Route path="monitor" element={<MonitorPage />} />
         <Route path="piles" element={<PilesPage />} />
         <Route path="queue" element={<QueuePage />} />
+        <Route path="acceptance" element={<AcceptancePage />} />
         <Route path="reports" element={<ReportsPage />} />
       </Route>
 

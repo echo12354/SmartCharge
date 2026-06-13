@@ -50,13 +50,13 @@ class FaultRecoveryService:
                 else:
                     self._mark_completed_by_user(queue.charging_car.user_id)
 
-        if queue.waiting_car:
-            queue.waiting_car.queue_position = "WAITING_AREA"
-            queue.waiting_car.assigned_pile_id = None
-            requeue_cars.append(queue.waiting_car)
+        for waiting in queue.waiting_cars:
+            waiting.queue_position = "WAITING_AREA"
+            waiting.assigned_pile_id = None
+            requeue_cars.append(waiting)
 
         queue.charging_car = None
-        queue.waiting_car = None
+        queue.waiting_cars = []
         pile_management_service.mark_fault(pile_id)
 
         candidate_piles = self._same_type_piles_except(pile_id)
@@ -139,9 +139,8 @@ class FaultRecoveryService:
         cars = []
         for candidate in pile_ids:
             queue = scheduling_service.pile_queues[candidate]
-            if queue.waiting_car:
-                car = queue.waiting_car
-                queue.waiting_car = None
+            for car in list(queue.waiting_cars):
+                queue.waiting_cars.remove(car)
                 car.queue_position = "WAITING_AREA"
                 car.assigned_pile_id = None
                 cars.append(car)

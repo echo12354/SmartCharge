@@ -83,7 +83,10 @@ class SchedulingService:
         self._remove_charging_car_without_promotion(pile_queue, session.user_id)
         session, bill = charging_session_service.end_session(session_id, reason)
         from services.queue_service import queue_service
-        queue_service.mark_completed_by_user(session.user_id)
+        if session.request_id:
+            queue_service.mark_completed_by_request(session.request_id)
+        else:
+            queue_service.mark_completed_by_user(session.user_id)
         fault_car = self._dispatch_fault_priority_car_to_pile(session.pile_id)
         promoted = None if fault_car else pile_queue.promote_waiting_car()
         if promoted:
@@ -106,7 +109,10 @@ class SchedulingService:
                     self._start_car_session(promoted, session.pile_id)
                 if not self.fault_priority_queue:
                     self.dispatch_paused = False
-            queue_service.mark_completed_by_user(session.user_id)
+            if session.request_id:
+                queue_service.mark_completed_by_request(session.request_id)
+            else:
+                queue_service.mark_completed_by_user(session.user_id)
         return closed
 
     def priority_dispatch(self, cars: list[WaitingCar], candidate_piles: list[str]):
@@ -240,8 +246,8 @@ class SchedulingService:
             wait_time += active.remaining_hours()
         elif queue.charging_car:
             wait_time += queue.charging_car.requested_amount / power
-        if queue.waiting_car:
-            wait_time += queue.waiting_car.requested_amount / power
+        for waiting in queue.waiting_cars:
+            wait_time += waiting.requested_amount / power
         return wait_time + amount / power
 
     def _start_car_session(self, car: WaitingCar, pile_id: str):
@@ -329,8 +335,7 @@ class SchedulingService:
         if queue.charging_car and queue.charging_car.user_id == user_id:
             queue.charging_car = None
             return
-        if queue.waiting_car and queue.waiting_car.user_id == user_id:
-            queue.waiting_car = None
+        queue.waiting_cars = [car for car in queue.waiting_cars if car.user_id != user_id]
 
     @staticmethod
     def _queue_number_sort_key(queue_number: str):

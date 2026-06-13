@@ -12,8 +12,10 @@ export default function Layout({ variant }: LayoutProps) {
   const links = variant === 'admin'
     ? [
         { to: '/admin', label: '概览', end: true },
+        { to: '/admin/monitor', label: '充电区监控' },
         { to: '/admin/piles', label: '充电桩管理' },
         { to: '/admin/queue', label: '等候队列' },
+        { to: '/admin/acceptance', label: '验收测试' },
         { to: '/admin/reports', label: '统计报表' },
       ]
     : [

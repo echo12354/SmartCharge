@@ -1,17 +1,27 @@
 import type {
+  AcceptanceEvent,
+  AcceptanceRunResult,
   AdminQueueCar,
   ApiResponse,
   Bill,
   ChargingPile,
   ChargingRequest,
   ChargingSession,
+  DispatchOverview,
   ReportRow,
+  StationSnapshot,
   User,
   UserVehicleOverview,
 } from './types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
+
+let currentUsername: string | null = null
+
+export function setApiUsername(username: string | null) {
+  currentUsername = username
+}
 
 async function request<T>(
   path: string,
@@ -22,8 +32,9 @@ async function request<T>(
     ...JSON_HEADERS,
     ...(options.headers as Record<string, string> | undefined),
   }
-  if (username) {
-    headers['X-Username'] = username
+  const effectiveUser = username ?? currentUsername
+  if (effectiveUser) {
+    headers['X-Username'] = effectiveUser
   }
 
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers })
@@ -123,8 +134,8 @@ export const api = {
     return request('/api/admin/piles')
   },
 
-  powerOnPile(pileId: string): Promise<unknown> {
-    return request(`/api/piles/${pileId}/power-on`, { method: 'POST' })
+  getPileDetail(pileId: number): Promise<Record<string, unknown>> {
+    return request(`/api/admin/piles/${pileId}/details`)
   },
 
   powerOffPile(pileId: string, strategy = 'priority'): Promise<unknown> {
@@ -155,5 +166,46 @@ export const api = {
 
   getPileStatistics(): Promise<Record<string, unknown>> {
     return request('/api/admin/statistics/piles')
+  },
+
+  getDispatchOverview(): Promise<DispatchOverview> {
+    return request('/api/admin/dispatch/overview')
+  },
+
+  getAdminSessions(): Promise<{ sessions: ChargingSession[]; totalCount: number }> {
+    return request('/api/admin/charging/sessions')
+  },
+
+  getStationSnapshot(): Promise<StationSnapshot> {
+    return request('/api/acceptance/snapshot')
+  },
+
+  resetAcceptance(): Promise<unknown> {
+    return request('/api/acceptance/reset', { method: 'POST' })
+  },
+
+  runAcceptanceAll(stopAt = '09:30', strategy = 'priority'): Promise<AcceptanceRunResult> {
+    return request('/api/acceptance/run-all', {
+      method: 'POST',
+      body: JSON.stringify({ stopAt, strategy }),
+    })
+  },
+
+  runAcceptanceNext(strategy = 'priority'): Promise<Record<string, unknown>> {
+    return request('/api/acceptance/events/next', {
+      method: 'POST',
+      body: JSON.stringify({ strategy }),
+    })
+  },
+
+  runAcceptanceEvent(index: number, strategy = 'priority'): Promise<Record<string, unknown>> {
+    return request(`/api/acceptance/events/${index}`, {
+      method: 'POST',
+      body: JSON.stringify({ strategy }),
+    })
+  },
+
+  listAcceptanceEvents(): Promise<{ events: AcceptanceEvent[]; total: number }> {
+    return request('/api/acceptance/events')
   },
 }

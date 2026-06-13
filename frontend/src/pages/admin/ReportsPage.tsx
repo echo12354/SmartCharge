@@ -57,6 +57,12 @@ export default function ReportsPage() {
         </div>
       </section>
 
+      <section className="card info-card">
+        <p className="muted">
+          报表字段：时间范围、充电桩编号、累计充电次数/时长/电量、累计充电费/服务费/总费用（需求管理员客户端）。
+        </p>
+      </section>
+
       <section className="metrics-grid">
         <div className="metric-card"><span>累计次数</span><strong>{totals.chargeCount}</strong></div>
         <div className="metric-card"><span>累计时长</span><strong>{totals.chargeDuration.toFixed(2)} h</strong></div>

@@ -5,6 +5,7 @@ from flask import Blueprint, request
 from services.fault_recovery_service import fault_recovery_service
 from services.pile_management_service import pile_management_service
 from services.scheduling_service import scheduling_service
+from utils.auth_helpers import admin_required
 from utils.responses import fail, success
 
 pile_bp = Blueprint("pile", __name__, url_prefix="/api/piles")
@@ -27,6 +28,7 @@ def query_pile_state(pile_id):
 
 
 @pile_bp.post("/<pile_id>/power-on")
+@admin_required
 def power_on(pile_id):
     try:
         record, dispatched = fault_recovery_service.recover_pile(pile_id)
@@ -40,6 +42,7 @@ def power_on(pile_id):
 
 
 @pile_bp.post("/<pile_id>/power-off")
+@admin_required
 def power_off(pile_id):
     """管理员关闭充电桩时按故障场景处理，并触发受影响车辆重新调度。"""
     data = request.get_json() or {}
@@ -58,6 +61,7 @@ def power_off(pile_id):
 
 
 @pile_bp.post("/<pile_id>/start")
+@admin_required
 def start_pile(pile_id):
     try:
         pile = pile_management_service.start_pile(pile_id)
@@ -67,10 +71,10 @@ def start_pile(pile_id):
 
 
 @pile_bp.patch("/<pile_id>/parameters")
+@admin_required
 def set_parameters(pile_id):
     try:
         pile = pile_management_service.set_parameters(pile_id, request.get_json() or {})
         return success("parameters updated", pile.to_dict())
     except ValueError as exc:
         return fail(str(exc), 400)
-

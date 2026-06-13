@@ -34,7 +34,7 @@ class ChargingSessionService:
             active = self.get_user_active_session(user_id)
             if active:
                 return active
-        pile_active = self.get_pile_active_session(pile_id)
+        pile_active = self._cleanup_stale_pile_session(pile_id, request_id)
         if pile_active:
             raise ValueError("pile already has active session")
         pile = pile_management_service.get_pile(pile_id)
@@ -151,7 +151,37 @@ class ChargingSessionService:
             items = active + items
         return sorted(items, key=lambda s: s.start_time or s.end_time, reverse=True)
 
+    def _cleanup_stale_pile_session(self, pile_id: str, request_id: str | None):
+        """清理桩上已无对应充电车辆但仍占用的会话。"""
+        from services.scheduling_service import scheduling_service
+
+        pile_active = self.get_pile_active_session(pile_id)
+        if not pile_active:
+            return None
+        queue = scheduling_service.pile_queues.get(pile_id)
+        charging_car = queue.charging_car if queue else None
+        if charging_car and charging_car.request_id == pile_active.request_id:
+            pile_active.refresh_progress()
+            if pile_active.status == "COMPLETED":
+                self._archive_session(pile_active)
+                pile_management_service.mark_available(pile_id)
+                return None
+            return pile_active
+        if pile_active.status in ("PREPARING", "CHARGING"):
+            pile_active.stop("stale session cleanup")
+            self._archive_session(pile_active)
+            pile_management_service.mark_available(pile_id)
+        return None
+
+    def refresh_all_active_sessions(self):
+        for session in list(self.active_sessions.values()):
+            session.refresh_progress()
+            self._save_session_to_database(session)
+
     def list_active_sessions(self):
+        from utils.sim_clock import sim_clock
+        if sim_clock.is_enabled() and not sim_clock.is_realtime_tick():
+            sim_clock.enable_realtime_tick()
         sessions = self._list_active_sessions_from_database()
         if sessions is not None:
             for session in sessions:

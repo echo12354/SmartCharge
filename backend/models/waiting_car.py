@@ -4,7 +4,8 @@
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+
+from utils.time_utils import now
 
 
 @dataclass
@@ -22,11 +23,11 @@ class WaitingCar:
     queue_number: str = ""
     queue_position: str = "WAITING_AREA"
     assigned_pile_id: str | None = None
-    join_time: datetime = field(default_factory=datetime.now)
+    join_time: object = field(default_factory=now)
 
     def waiting_minutes(self) -> int:
         """根据进入队列时间计算已等待分钟数。"""
-        return int((datetime.now() - self.join_time).total_seconds() // 60)
+        return int((now() - self.join_time).total_seconds() // 60)
 
     def to_dict(self):
         return {

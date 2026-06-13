@@ -7,6 +7,7 @@ try:
 except ImportError:  # CORS is optional for the first backend-only version.
     CORS = None
 
+from controllers.acceptance_controller import acceptance_bp
 from controllers.auth_controller import auth_bp
 from controllers.bill_controller import bill_bp
 from controllers.charging_request_controller import charging_request_bp
@@ -17,7 +18,9 @@ from controllers.pile_controller import pile_bp
 from controllers.queue_controller import queue_bp
 from controllers.scheduling_controller import scheduling_bp
 from database.db import get_database_status
+from config.settings import SIMULATION_ENABLED
 from utils.responses import success
+from utils.sim_clock import sim_clock
 
 
 def create_app():
@@ -25,6 +28,10 @@ def create_app():
     if CORS:
         CORS(app)
 
+    if not SIMULATION_ENABLED:
+        sim_clock.disable()
+
+    app.register_blueprint(acceptance_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(compat_bp)
     app.register_blueprint(charging_request_bp)

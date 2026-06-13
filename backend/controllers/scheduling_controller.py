@@ -6,12 +6,14 @@
 from flask import Blueprint
 
 from services.scheduling_service import scheduling_service
+from utils.auth_helpers import admin_required
 from utils.responses import success
 
 scheduling_bp = Blueprint("scheduling", __name__, url_prefix="/api/scheduling")
 
 
 @scheduling_bp.post("/dispatch")
+@admin_required
 def dispatch_waiting_cars():
     """手动触发一次等候区到充电桩队列的调度。"""
     return success("dispatch completed", scheduling_service.dispatch_waiting_cars())
@@ -21,4 +23,3 @@ def dispatch_waiting_cars():
 def scheduling_state():
     scheduling_service.refresh_finished_sessions()
     return success("scheduling state", scheduling_service.get_statistics())
-

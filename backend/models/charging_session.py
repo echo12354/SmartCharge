@@ -4,9 +4,9 @@
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
 
 from utils.id_generator import generate_id
+from utils.time_utils import now
 
 
 @dataclass
@@ -25,19 +25,19 @@ class ChargingSession:
     session_id: str = field(default_factory=lambda: generate_id("SESSION"))
     status: str = "PREPARING"
     current_amount: float = 0.0
-    start_time: datetime | None = None
-    end_time: datetime | None = None
+    start_time: object | None = None
+    end_time: object | None = None
     stop_reason: str | None = None
 
     def start(self):
         self.status = "CHARGING"
-        self.start_time = datetime.now()
+        self.start_time = now()
 
     def refresh_progress(self):
         """按已运行时间和充电桩功率刷新当前电量。"""
         if self.status != "CHARGING" or not self.start_time:
             return
-        elapsed_hours = (datetime.now() - self.start_time).total_seconds() / 3600
+        elapsed_hours = (now() - self.start_time).total_seconds() / 3600
         self.current_amount = min(self.target_amount, elapsed_hours * self.pile_power)
         if self.current_amount >= self.target_amount:
             self.complete()
@@ -45,7 +45,7 @@ class ChargingSession:
     def complete(self):
         self.status = "COMPLETED"
         self.current_amount = self.target_amount
-        self.end_time = datetime.now()
+        self.end_time = now()
         self.stop_reason = "completed"
 
     def stop(self, reason: str = "manual stop"):
@@ -53,13 +53,13 @@ class ChargingSession:
         if self.status == "COMPLETED":
             return
         self.status = "INTERRUPTED"
-        self.end_time = datetime.now()
+        self.end_time = now()
         self.stop_reason = reason
 
     def duration_hours(self) -> float:
         if not self.start_time:
             return 0.0
-        end = self.end_time or datetime.now()
+        end = self.end_time or now()
         return max(0.0, (end - self.start_time).total_seconds() / 3600)
 
     def progress_percent(self) -> float:

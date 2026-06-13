@@ -98,8 +98,12 @@ class QueueService:
     def cancel_request(self, user_id: str, request_id: str | None = None):
         """取消指定请求，并从等候区或充电桩队列中移除对应车辆。"""
         request = self._get_active_request_for_user(user_id, request_id)
-        self.waiting_queue.remove_by_request_id(request.request_id)
+        from services.charging_session_service import charging_session_service
         from services.scheduling_service import scheduling_service
+        session = charging_session_service.get_request_active_session(request.request_id)
+        if session and session.status in ("PREPARING", "CHARGING"):
+            scheduling_service.end_charging(session.session_id, "request cancelled")
+        self.waiting_queue.remove_by_request_id(request.request_id)
         scheduling_service.remove_request_from_pile_queues(request.request_id)
         request.cancel()
         self._untrack_active_request(request)
@@ -183,21 +187,23 @@ class QueueService:
                     "userId": queue.charging_car.user_id,
                     "requestId": queue.charging_car.request_id,
                     "vehicleLabel": queue.charging_car.vehicle_label,
+                    "chargeMode": queue.charging_car.charge_mode,
                     "requestedCharge": queue.charging_car.requested_amount,
                     "queueTime": queue.charging_car.to_dict()["queueTime"],
                     "status": "充电中",
                     "statusClass": "charging",
                 })
-            if queue.waiting_car:
+            for index, waiting in enumerate(queue.waiting_cars, start=1):
                 rows.append({
                     "id": len(rows) + 1,
                     "pileName": pile_id,
-                    "userId": queue.waiting_car.user_id,
-                    "requestId": queue.waiting_car.request_id,
-                    "vehicleLabel": queue.waiting_car.vehicle_label,
-                    "requestedCharge": queue.waiting_car.requested_amount,
-                    "queueTime": queue.waiting_car.to_dict()["queueTime"],
-                    "status": "排队中 第1位",
+                    "userId": waiting.user_id,
+                    "requestId": waiting.request_id,
+                    "vehicleLabel": waiting.vehicle_label,
+                    "chargeMode": waiting.charge_mode,
+                    "requestedCharge": waiting.requested_amount,
+                    "queueTime": waiting.to_dict()["queueTime"],
+                    "status": f"排队中 第{index}位",
                     "statusClass": "waiting",
                 })
         for car in self.waiting_queue.cars:
@@ -207,6 +213,7 @@ class QueueService:
                 "userId": car.user_id,
                 "requestId": car.request_id,
                 "vehicleLabel": car.vehicle_label,
+                "chargeMode": car.charge_mode,
                 "requestedCharge": car.requested_amount,
                 "queueTime": car.to_dict()["queueTime"],
                 "status": "等待中",
@@ -220,13 +227,13 @@ class QueueService:
         if not queue:
             return None
         waiting = []
-        if queue.waiting_car:
+        for waiting_car in queue.waiting_cars:
             waiting.append({
-                "username": queue.waiting_car.user_id,
-                "requestId": queue.waiting_car.request_id,
-                "vehicleLabel": queue.waiting_car.vehicle_label,
-                "requestedCharge": queue.waiting_car.requested_amount,
-                "queueTime": queue.waiting_car.to_dict()["queueTime"],
+                "username": waiting_car.user_id,
+                "requestId": waiting_car.request_id,
+                "vehicleLabel": waiting_car.vehicle_label,
+                "requestedCharge": waiting_car.requested_amount,
+                "queueTime": waiting_car.to_dict()["queueTime"],
             })
         return {
             "pileId": pile_id,
