@@ -152,11 +152,31 @@ class FaultRecoveryService:
         from services.queue_service import queue_service
         dispatched_set = set(id(car) for car in dispatched)
         for car in cars:
-            if id(car) not in dispatched_set and not queue_service.waiting_queue.get_by_user(car.user_id):
-                car.queue_position = "WAITING_AREA"
-                car.assigned_pile_id = None
-                if queue_service.waiting_queue.has_space():
-                    queue_service.waiting_queue.cars.append(car)
+            if id(car) in dispatched_set or FaultRecoveryService._waiting_area_has_car(car):
+                continue
+            car.queue_position = "WAITING_AREA"
+            car.assigned_pile_id = None
+            if queue_service.waiting_queue.has_space():
+                queue_service.waiting_queue.cars.append(car)
+                continue
+            FaultRecoveryService._keep_fault_pending(car)
+
+    @staticmethod
+    def _waiting_area_has_car(car: WaitingCar):
+        from services.queue_service import queue_service
+        if car.request_id and queue_service.waiting_queue.get_by_request_id(car.request_id):
+            return True
+        return not car.request_id and queue_service.waiting_queue.get_by_user(car.user_id)
+
+    @staticmethod
+    def _keep_fault_pending(car: WaitingCar):
+        for pending in scheduling_service.fault_priority_queue:
+            if car.request_id and pending.request_id == car.request_id:
+                return
+            if not car.request_id and pending.user_id == car.user_id:
+                return
+        scheduling_service.add_fault_priority_cars([car])
+        scheduling_service.dispatch_paused = True
 
     @staticmethod
     def _mark_completed_by_user(user_id: str):

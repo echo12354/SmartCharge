@@ -13,11 +13,13 @@ pile_bp = Blueprint("pile", __name__, url_prefix="/api/piles")
 
 @pile_bp.get("")
 def list_piles():
+    scheduling_service.system_tick()
     return success("pile list", {"piles": [pile.to_dict() for pile in pile_management_service.list_piles()]})
 
 
 @pile_bp.get("/<pile_id>")
 def query_pile_state(pile_id):
+    scheduling_service.system_tick()
     pile = pile_management_service.get_pile(pile_id)
     if not pile:
         return fail("pile not found", 404)

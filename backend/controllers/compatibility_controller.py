@@ -24,6 +24,10 @@ def _username():
     return request.headers.get("X-Username") or request.args.get("userId") or data.get("userId") or data.get("username")
 
 
+def _system_tick():
+    scheduling_service.system_tick()
+
+
 @compat_bp.post("/register")
 def legacy_register():
     data = request.get_json() or {}
@@ -144,6 +148,7 @@ def legacy_modify_mode():
 
 @compat_bp.get("/queue/charge-area")
 def legacy_charge_area():
+    _system_tick()
     return success("获取充电区状态成功", queue_service.query_charge_area_state())
 
 
@@ -155,6 +160,7 @@ def legacy_ahead_count():
 @compat_bp.get("/admin/statistics/piles")
 @admin_required
 def legacy_admin_pile_statistics():
+    _system_tick()
     stats = pile_management_service.get_statistics()
     stats["totalQueuedCars"] = len(queue_service.waiting_queue.cars)
     stats["totalRevenue"] = round(sum(bill.total_fee for bill in billing_service.list_all_bills()), 2)
@@ -164,6 +170,7 @@ def legacy_admin_pile_statistics():
 @compat_bp.get("/admin/piles")
 @admin_required
 def legacy_admin_piles():
+    _system_tick()
     piles = []
     for index, pile in enumerate(pile_management_service.list_piles(), start=1):
         data = pile.to_dict()
@@ -203,6 +210,7 @@ def legacy_update_pile_status(pile_id):
 @compat_bp.get("/admin/queue")
 @admin_required
 def legacy_admin_queue():
+    _system_tick()
     return success("获取队列信息成功", {"cars": queue_service.get_admin_queue_info()})
 
 
@@ -215,6 +223,7 @@ def legacy_admin_reports():
 @compat_bp.get("/admin/piles/<int:pile_id>/details")
 @admin_required
 def legacy_pile_details(pile_id):
+    _system_tick()
     pile_char = chr(ord("A") + pile_id - 1)
     pile = pile_management_service.get_pile(pile_char)
     if not pile:
@@ -238,16 +247,19 @@ def legacy_pile_details(pile_id):
 
 @compat_bp.get("/dispatch/statistics")
 def legacy_dispatch_statistics():
+    _system_tick()
     return success("获取调度统计成功", scheduling_service.get_statistics())
 
 
 @compat_bp.get("/dispatch/pile-queues")
 def legacy_pile_queues():
+    _system_tick()
     return success("获取充电桩队列状态成功", scheduling_service.get_all_pile_queues())
 
 
 @compat_bp.get("/dispatch/pile-queue/<pile_id>")
 def legacy_pile_queue(pile_id):
+    _system_tick()
     queue = scheduling_service.get_pile_queue(pile_id)
     if not queue:
         return fail("充电桩队列不存在", 404)
@@ -268,6 +280,7 @@ def legacy_stop_dispatch_engine():
 
 @compat_bp.get("/dispatch/engine/status")
 def legacy_dispatch_engine_status():
+    _system_tick()
     stats = scheduling_service.get_statistics()
     return success("获取调度引擎状态成功", {
         "isRunning": stats["engineRunning"],
@@ -280,6 +293,7 @@ def legacy_dispatch_engine_status():
 @compat_bp.get("/admin/dispatch/overview")
 @admin_required
 def legacy_dispatch_overview():
+    _system_tick()
     stats = scheduling_service.get_statistics()
     return success("获取调度概览成功", {
         "engineStatus": {
@@ -331,6 +345,7 @@ def legacy_session_bill(session_id):
 
 @compat_bp.get("/charging/real-time-status")
 def legacy_real_time_status():
+    _system_tick()
     sessions = [session.to_dict() for session in charging_session_service.list_active_sessions()]
     return success("获取实时状态成功", {
         "activeSessions": sessions,
@@ -341,6 +356,7 @@ def legacy_real_time_status():
 @compat_bp.get("/admin/charging/sessions")
 @admin_required
 def legacy_admin_sessions():
+    _system_tick()
     sessions = [session.to_dict() for session in charging_session_service.list_active_sessions()]
     return success("获取充电会话列表成功", {"sessions": sessions, "totalCount": len(sessions)})
 
@@ -348,6 +364,7 @@ def legacy_admin_sessions():
 @compat_bp.get("/admin/charging/statistics")
 @admin_required
 def legacy_admin_charging_statistics():
+    _system_tick()
     return success("获取充电统计成功", charging_session_service.get_statistics())
 
 
@@ -359,6 +376,7 @@ def legacy_admin_stop_session(session_id):
 
 @compat_bp.get("/charging/process/monitor/status")
 def legacy_monitor_status():
+    _system_tick()
     return success("获取监控状态成功", {
         "timestamp": None,
         "monitorRunning": True,

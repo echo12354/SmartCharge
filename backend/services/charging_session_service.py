@@ -131,11 +131,11 @@ class ChargingSessionService:
         for session_id, session in list(self.active_sessions.items()):
             session.refresh_progress()
             if session.status == "COMPLETED":
-                self._save_session_to_database(session)
-                self._archive_session(session)
-                pile_management_service.add_statistics(session.pile_id, session.current_amount, session.duration_hours())
-                pile_management_service.mark_available(session.pile_id)
-                bill = billing_service.create_bill(session)
+                bill = self._finalize_completed_session(session)
+                closed.append((session, bill))
+        for session_id, session in list(self.completed_sessions.items()):
+            if session.status == "COMPLETED" and not billing_service.get_bill(session_id):
+                bill = self._finalize_completed_session(session)
                 closed.append((session, bill))
         return closed
 
@@ -186,8 +186,9 @@ class ChargingSessionService:
         if sessions is not None:
             for session in sessions:
                 session.refresh_progress()
-                self._cache_session(session)
                 self._save_session_to_database(session)
+                if session.status in ("PREPARING", "CHARGING"):
+                    self._cache_session(session)
             return sessions
         for session in self.active_sessions.values():
             session.refresh_progress()
@@ -219,6 +220,17 @@ class ChargingSessionService:
         self.active_sessions.pop(session.session_id, None)
         self._untrack_active_session(session)
         self.completed_sessions[session.session_id] = session
+
+    def _finalize_completed_session(self, session: ChargingSession):
+        self._save_session_to_database(session)
+        self._archive_session(session)
+        existing_bill = billing_service.get_bill(session.session_id)
+        if existing_bill:
+            pile_management_service.mark_available(session.pile_id)
+            return existing_bill
+        pile_management_service.add_statistics(session.pile_id, session.current_amount, session.duration_hours())
+        pile_management_service.mark_available(session.pile_id)
+        return billing_service.create_bill(session)
 
     def _track_active_session(self, session: ChargingSession):
         self.user_active_sessions.setdefault(session.user_id, set()).add(session.session_id)

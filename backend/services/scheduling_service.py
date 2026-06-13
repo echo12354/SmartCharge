@@ -25,6 +25,13 @@ class SchedulingService:
         self.fault_priority_queue: list[WaitingCar] = []
         self._load_recent_decisions_from_database()
 
+    def system_tick(self):
+        charging_session_service.refresh_all_active_sessions()
+        self.refresh_finished_sessions()
+        if self.engine_running:
+            return self.dispatch_waiting_cars()
+        return self.get_statistics()
+
     def dispatch_waiting_cars(self):
         """执行普通调度。
 

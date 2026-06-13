@@ -19,7 +19,8 @@ export default function Layout({ variant }: LayoutProps) {
         { to: '/admin/reports', label: '统计报表' },
       ]
     : [
-        { to: '/user', label: '充电服务', end: true },
+        { to: '/user', label: '首页', end: true },
+        { to: '/user/charge', label: '充电服务' },
         { to: '/user/bills', label: '充电详单' },
       ]
 

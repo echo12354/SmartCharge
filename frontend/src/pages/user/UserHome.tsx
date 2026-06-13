@@ -42,7 +42,8 @@ export default function UserHome() {
       await refresh()
       setMessage('新的充电请求已提交')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '提交失败')
+      const message = err instanceof Error ? err.message : '提交失败'
+      setError(message.includes('waiting queue is full') ? '等候区已满，请稍后再试' : message)
     } finally {
       setLoading(false)
     }

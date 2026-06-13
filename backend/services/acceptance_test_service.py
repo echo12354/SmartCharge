@@ -171,6 +171,7 @@ class AcceptanceTestService:
         return self.run_event(next_index, strategy=strategy)
 
     def get_snapshot(self):
+        scheduling_service.system_tick()
         piles = {label: self._format_pile_column(pile_id) for pile_id, label in PILE_COLUMNS}
         return {
             "simTime": sim_clock.now().strftime("%H:%M"),
@@ -228,8 +229,14 @@ class AcceptanceTestService:
         except ValueError as exc:
             if "waiting queue is full" not in str(exc):
                 raise
-            queue_service.waiting_queue.capacity += 1
-            request = queue_service.submit_request(vehicle, charge_mode, amount, vehicle_label=vehicle)
+            return {
+                "type": "submit_failed",
+                "userId": vehicle,
+                "chargeMode": charge_mode,
+                "amount": amount,
+                "reason": "waiting queue is full",
+                "message": "提交失败：等候区已满",
+            }
         self._request_ids[vehicle] = request.request_id
         return {
             "type": "submit",

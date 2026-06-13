@@ -16,11 +16,34 @@ import type {
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
+const AUTH_STORAGE_KEY = 'smartcharge_user'
 
 let currentUsername: string | null = null
 
 export function setApiUsername(username: string | null) {
   currentUsername = username
+}
+
+function loadStoredUsername(): string | null {
+  const raw = localStorage.getItem(AUTH_STORAGE_KEY)
+  if (!raw) return null
+
+  try {
+    const storedUser = JSON.parse(raw) as { username?: unknown }
+    return typeof storedUser.username === 'string' && storedUser.username.trim()
+      ? storedUser.username
+      : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeErrorMessage(message: string | undefined, status: number): string {
+  if (message === 'authentication required') {
+    return '登录状态已失效，请重新登录'
+  }
+
+  return message || `璇锋眰澶辫触 (${status})`
 }
 
 async function request<T>(
@@ -32,7 +55,7 @@ async function request<T>(
     ...JSON_HEADERS,
     ...(options.headers as Record<string, string> | undefined),
   }
-  const effectiveUser = username ?? currentUsername
+  const effectiveUser = username ?? currentUsername ?? loadStoredUsername()
   if (effectiveUser) {
     headers['X-Username'] = effectiveUser
   }
@@ -41,7 +64,7 @@ async function request<T>(
   const body = (await response.json()) as ApiResponse<T> & { type?: string }
 
   if (!response.ok || body.success === false) {
-    throw new Error(body.message || `请求失败 (${response.status})`)
+    throw new Error(normalizeErrorMessage(body.message, response.status))
   }
 
   return (body.data ?? body) as T

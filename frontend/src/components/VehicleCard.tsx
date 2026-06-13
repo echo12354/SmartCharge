@@ -27,9 +27,9 @@ export default function VehicleCard({ username, vehicle, onUpdated }: VehicleCar
   const [error, setError] = useState('')
 
   const label = request.vehicleLabel || `车辆 ${request.queueNumber || request.requestId.slice(-4)}`
-  const isWaiting = vehicle.state === 'WAITING_AREA'
+  const canEditRequest = ['WAITING_AREA', 'WAITING', 'PENDING'].includes(vehicle.state)
+  const canCancelQueue = ['WAITING_AREA', 'WAITING', 'QUEUED', 'PENDING', 'PILE_QUEUE', 'DISPATCHED'].includes(vehicle.state)
   const isCharging = vehicle.state === 'CHARGING'
-  const inPileQueue = vehicle.state === 'PILE_QUEUE'
 
   async function runAction(action: () => Promise<unknown>) {
     setLoading(true)
@@ -42,6 +42,11 @@ export default function VehicleCard({ username, vehicle, onUpdated }: VehicleCar
     } finally {
       setLoading(false)
     }
+  }
+
+  function confirmAndRun(message: string, action: () => Promise<unknown>) {
+    if (!window.confirm(message)) return
+    void runAction(action)
   }
 
   return (
@@ -64,7 +69,7 @@ export default function VehicleCard({ username, vehicle, onUpdated }: VehicleCar
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {isWaiting && (
+      {canEditRequest && (
         <div className="vehicle-actions">
           <div className="inline-form">
             <label>
@@ -80,23 +85,23 @@ export default function VehicleCard({ username, vehicle, onUpdated }: VehicleCar
             </label>
           </div>
           <div className="button-row">
-            <button type="button" className="btn btn-secondary" disabled={loading} onClick={() => runAction(() => api.modifyAmount(username, request.requestId, editAmount))}>
+            <button type="button" className="btn btn-secondary" disabled={loading} onClick={() => confirmAndRun('确认修改本次请求充电量吗？', () => api.modifyAmount(username, request.requestId, editAmount))}>
               保存电量
             </button>
-            <button type="button" className="btn btn-secondary" disabled={loading || editMode === request.chargeMode} onClick={() => runAction(() => api.modifyMode(username, request.requestId, editMode))}>
+            <button type="button" className="btn btn-secondary" disabled={loading || editMode === request.chargeMode} onClick={() => confirmAndRun('修改充电模式会重新排队，确认继续吗？', () => api.modifyMode(username, request.requestId, editMode))}>
               切换模式
             </button>
-            <button type="button" className="btn btn-danger" disabled={loading} onClick={() => runAction(() => api.cancelRequest(username, request.requestId))}>
-              取消
+            <button type="button" className="btn btn-danger" disabled={loading} onClick={() => confirmAndRun('确认取消本次充电请求吗？', () => api.cancelRequest(username, request.requestId))}>
+              取消排队
             </button>
           </div>
         </div>
       )}
 
-      {(inPileQueue || isCharging) && !isWaiting && (
+      {canCancelQueue && !canEditRequest && (
         <div className="button-row">
-          <button type="button" className="btn btn-danger" disabled={loading} onClick={() => runAction(() => api.cancelRequest(username, request.requestId))}>
-            取消充电
+          <button type="button" className="btn btn-danger" disabled={loading} onClick={() => confirmAndRun('确认取消本次充电请求吗？', () => api.cancelRequest(username, request.requestId))}>
+            取消排队
           </button>
         </div>
       )}
@@ -112,7 +117,7 @@ export default function VehicleCard({ username, vehicle, onUpdated }: VehicleCar
               <div className="progress-fill" style={{ width: `${session.progressPercent}%` }} />
             </div>
           </div>
-          <button type="button" className="btn btn-primary" disabled={loading} onClick={() => runAction(() => api.endCharging(session.sessionId))}>
+          <button type="button" className="btn btn-primary" disabled={loading} onClick={() => confirmAndRun('确认结束本次充电吗？', () => api.endCharging(session.sessionId))}>
             结束充电
           </button>
         </div>

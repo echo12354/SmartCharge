@@ -45,6 +45,18 @@ export default function AcceptancePage() {
     }
   }
 
+  async function replayToPreviousEvent() {
+    const currentIndex = snapshot?.lastEventIndex ?? 0
+    const targetIndex = Math.max(0, currentIndex - 1)
+    let result: unknown = await api.resetAcceptance()
+
+    for (let index = 1; index <= targetIndex; index += 1) {
+      result = await api.runAcceptanceEvent(index, strategy)
+    }
+
+    return result
+  }
+
   return (
     <div className="page-grid">
       <section className="card hero-card">
@@ -80,6 +92,9 @@ export default function AcceptancePage() {
           </label>
         </div>
         <div className="button-row">
+          <button type="button" className="btn btn-secondary" disabled={loading || !snapshot?.lastEventIndex} onClick={() => runAction(replayToPreviousEvent, '已返回上一条事件')}>
+            返回上一条
+          </button>
           <button type="button" className="btn btn-secondary" disabled={loading} onClick={() => runAction(() => api.resetAcceptance(), '验收环境已重置')}>
             重置环境
           </button>

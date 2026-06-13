@@ -19,6 +19,12 @@ def _request_id(data=None):
     return payload.get("requestId") or request.args.get("requestId")
 
 
+def _client_error_message(exc):
+    if "waiting queue is full" in str(exc):
+        return "等候区已满，请稍后再试"
+    return str(exc)
+
+
 @charging_request_bp.get("")
 def list_requests():
     username = _username()
@@ -45,7 +51,7 @@ def create_request():
         )
         return success("charging request submitted", charging_request.to_dict(), 201)
     except (ValueError, TypeError) as exc:
-        return fail(str(exc), 400)
+        return fail(_client_error_message(exc), 400)
 
 
 @charging_request_bp.patch("/amount")
@@ -61,7 +67,7 @@ def modify_amount():
         )
         return success("amount modified", charging_request.to_dict())
     except (ValueError, TypeError) as exc:
-        return fail(str(exc), 400)
+        return fail(_client_error_message(exc), 400)
 
 
 @charging_request_bp.patch("/mode")
@@ -77,7 +83,7 @@ def modify_mode():
         )
         return success("mode modified", charging_request.to_dict())
     except (ValueError, TypeError) as exc:
-        return fail(str(exc), 400)
+        return fail(_client_error_message(exc), 400)
 
 
 @charging_request_bp.get("/car-state")

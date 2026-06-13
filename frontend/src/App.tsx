@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import UserWelcomePage from './pages/user/UserWelcomePage'
 import UserHome from './pages/user/UserHome'
 import BillsPage from './pages/user/BillsPage'
 import AdminHome from './pages/admin/AdminHome'
@@ -42,7 +43,8 @@ function AppRoutes() {
           </ProtectedRoute>
         )}
       >
-        <Route index element={<UserHome />} />
+        <Route index element={<UserWelcomePage />} />
+        <Route path="charge" element={<UserHome />} />
         <Route path="bills" element={<BillsPage />} />
       </Route>
 
