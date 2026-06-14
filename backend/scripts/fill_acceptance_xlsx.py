@@ -1,7 +1,8 @@
-"""将 acceptance_result.json 的测试结果写入《作业验收用例.xlsx》。
+"""将最新验收快照写入《作业验收用例.xlsx》。
 
-用法（在 backend 目录）：
+用法（先启动后端服务，再在 backend 目录执行）：
     pip install openpyxl
+    python scripts/fill_acceptance_xlsx.py --from-api --stop 10:50
     python scripts/run_acceptance_test.py --stop 10:50 -o acceptance_result.json
     python scripts/fill_acceptance_xlsx.py
     python scripts/fill_acceptance_xlsx.py -i acceptance_result.json -t ../作业验收用例.xlsx -o ../作业验收用例_已填写.xlsx
@@ -17,6 +18,10 @@ import sys
 
 BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(BACKEND_ROOT)
+if BACKEND_ROOT not in sys.path:
+    sys.path.insert(0, BACKEND_ROOT)
+
+from scripts.run_acceptance_test import DEFAULT_BASE_URL, run_acceptance
 
 PILE_LABELS = ["快充1", "快充2", "慢充1", "慢充2", "慢充3"]
 # 测试用例 sheet：第 1 条事件从第 3 行开始，每条事件占 3 行。
@@ -132,14 +137,31 @@ def main():
         default=os.path.join(PROJECT_ROOT, "作业验收用例_已填写.xlsx"),
         help="Output Excel path (default: do not overwrite template)",
     )
+    parser.add_argument(
+        "--from-api",
+        action="store_true",
+        help="通过 /api/acceptance/* 执行事件并读取每步 snapshot 后直接填表",
+    )
+    parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Backend base URL")
+    parser.add_argument("--stop", default="10:50", help="Stop at simulated clock when --from-api is used")
+    parser.add_argument("--strategy", default="priority", help="Fault strategy when --from-api is used")
+    parser.add_argument("--save-json", help="可选：保存从 API 获取到的验收结果 JSON")
     args = parser.parse_args()
 
-    if not os.path.isfile(args.input):
+    if args.from_api:
+        payload = run_acceptance(args.base_url, stop_at=args.stop, strategy=args.strategy)
+        results = payload["results"]
+        if args.save_json:
+            with open(args.save_json, "w", encoding="utf-8") as file:
+                json.dump(payload, file, ensure_ascii=False, indent=2)
+    elif not os.path.isfile(args.input):
         raise SystemExit(f"找不到 JSON 文件: {args.input}\n请先运行: python scripts/run_acceptance_test.py --stop 10:50 -o acceptance_result.json")
+    else:
+        results = load_results(args.input)
+
     if not os.path.isfile(args.template):
         raise SystemExit(f"找不到 Excel 模板: {args.template}")
 
-    results = load_results(args.input)
     fill_workbook(results, args.template, args.output)
     print(f"已写入 {len(results)} 条事件")
     print(f"输出文件: {os.path.abspath(args.output)}")

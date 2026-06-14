@@ -16,14 +16,16 @@ export default function AcceptancePage() {
   const refresh = useCallback(async () => {
     const [eventList, snap] = await Promise.all([
       api.listAcceptanceEvents(),
-      api.getStationSnapshot(),
+      api.getStationSnapshot(strategy),
     ])
     setEvents(eventList.events)
     setSnapshot(snap)
-  }, [])
+  }, [strategy])
 
   useEffect(() => {
     refresh().catch((err) => setError(err instanceof Error ? err.message : '加载失败'))
+    const timer = window.setInterval(() => refresh().catch(() => undefined), 3000)
+    return () => window.clearInterval(timer)
   }, [refresh])
 
   async function runAction(action: () => Promise<unknown>, successMessage: string) {
@@ -32,8 +34,8 @@ export default function AcceptancePage() {
     setMessage('')
     try {
       const result = await action()
-      const data = result as { event?: string; simTime?: string; index?: number }
-      if (data.event) {
+      const data = result as { event?: string; simTime?: string; index?: number } | undefined
+      if (data?.event) {
         setLastResult(`#${data.index} ${data.simTime} ${data.event}`)
       }
       await refresh()
@@ -56,6 +58,17 @@ export default function AcceptancePage() {
 
     return result
   }
+
+  const safeEvents = events.filter(Boolean)
+  const executedIndex = snapshot?.lastEventIndex ?? 0
+  const latestEvent = executedIndex > 0
+    ? safeEvents.find((item) => item.index === executedIndex) ?? safeEvents[executedIndex - 1]
+    : undefined
+  const nextEvent = executedIndex < safeEvents.length
+    ? safeEvents.find((item) => item.index === executedIndex + 1) ?? safeEvents[executedIndex]
+    : undefined
+  const recentEventText = lastResult || (latestEvent ? `#${latestEvent.index} ${latestEvent.simTime} ${latestEvent.event}` : '暂无')
+  const nextEventText = nextEvent ? `#${nextEvent.index} ${nextEvent.simTime} ${nextEvent.event}` : '已完成全部事件'
 
   return (
     <div className="page-grid">
@@ -105,7 +118,8 @@ export default function AcceptancePage() {
             一键执行到截止时刻
           </button>
         </div>
-        {lastResult && <p className="muted">最近事件：{lastResult}</p>}
+        <p className="muted">最近事件：{recentEventText}</p>
+        <p className="muted">下一事件：{nextEventText}</p>
         {snapshot?.lastEventIndex != null && (
           <p className="muted">已执行：{snapshot.lastEventIndex} / {events.length} 条</p>
         )}
@@ -128,11 +142,11 @@ export default function AcceptancePage() {
               </tr>
             </thead>
             <tbody>
-              {events.map((item) => (
+              {safeEvents.map((item) => (
                 <tr key={item.index} className={snapshot?.lastEventIndex === item.index ? 'row-active' : ''}>
                   <td>{item.index}</td>
                   <td>{item.simTime}</td>
-                  <td><code>{item.event}</code></td>
+                  <td><code>{item.event || '-'}</code></td>
                   <td>{describeEvent(item.event)}</td>
                 </tr>
               ))}
@@ -144,7 +158,8 @@ export default function AcceptancePage() {
   )
 }
 
-function describeEvent(event: string): string {
+function describeEvent(event?: string): string {
+  if (!event) return '-'
   if (event.startsWith('(A,')) {
     if (event.includes(',O,0)')) return '取消充电'
     const mode = event.includes(',F,') ? '快充' : '慢充'

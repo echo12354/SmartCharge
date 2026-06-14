@@ -20,6 +20,7 @@ class WaitingCar:
     charge_mode: str
     requested_amount: float
     vehicle_label: str = ""
+    battery_capacity: float | None = None
     queue_number: str = ""
     queue_position: str = "WAITING_AREA"
     assigned_pile_id: str | None = None
@@ -34,6 +35,7 @@ class WaitingCar:
             "userId": self.user_id,
             "requestId": self.request_id,
             "vehicleLabel": self.vehicle_label,
+            "batteryCapacity": self.battery_capacity,
             "chargeMode": self.charge_mode,
             "requestedAmount": self.requested_amount,
             "queueNumber": self.queue_number,

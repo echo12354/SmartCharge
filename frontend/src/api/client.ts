@@ -61,6 +61,11 @@ async function request<T>(
   }
 
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    throw new Error(`接口返回非 JSON (${response.status})：${path}`)
+  }
+
   const body = (await response.json()) as ApiResponse<T> & { type?: string }
 
   if (!response.ok || body.success === false) {
@@ -94,10 +99,11 @@ export const api = {
     chargeMode: string,
     amount: number,
     vehicleLabel: string,
+    batteryCapacity?: number | null,
   ): Promise<ChargingRequest> {
     return request<ChargingRequest>('/api/charging-requests', {
       method: 'POST',
-      body: JSON.stringify({ chargeMode, amount, vehicleLabel }),
+      body: JSON.stringify({ chargeMode, amount, vehicleLabel, batteryCapacity }),
     }, username)
   },
 
@@ -199,8 +205,8 @@ export const api = {
     return request('/api/admin/charging/sessions')
   },
 
-  getStationSnapshot(): Promise<StationSnapshot> {
-    return request('/api/acceptance/snapshot')
+  getStationSnapshot(strategy = 'priority'): Promise<StationSnapshot> {
+    return request(`/api/acceptance/snapshot?strategy=${encodeURIComponent(strategy)}`)
   },
 
   resetAcceptance(): Promise<unknown> {

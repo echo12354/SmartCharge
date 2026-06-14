@@ -84,6 +84,7 @@ ACCEPTANCE_EVENTS: list[tuple[str, tuple[str, ...]]] = [
 class AcceptanceTestService:
     def __init__(self):
         self._request_ids: dict[str, str] = {}
+        self._failed_submit_vehicles: set[str] = set()
         self._last_event_index = 0
 
     def reset(self):
@@ -92,6 +93,7 @@ class AcceptanceTestService:
         sim_clock.reset(SIMULATION_START_TIME)
         sim_clock.enable_realtime_tick()
         self._request_ids = {}
+        self._failed_submit_vehicles = set()
         self._last_event_index = 0
 
         queue_service.waiting_queue = WaitingQueue()
@@ -148,7 +150,7 @@ class AcceptanceTestService:
         sim_clock.enable_realtime_tick()
         return result
 
-    def _run_event_body(self, event_index: int, strategy: str = "priority"):
+    def _run_event_body(self, event_index: int, strategy: str = "priority", include_snapshot: bool = True):
         clock, event = ACCEPTANCE_EVENTS[event_index - 1]
         self._advance_to_clock(clock)
         self._prepare_dispatch_before_event()
@@ -156,13 +158,15 @@ class AcceptanceTestService:
         charging_session_service.refresh_all_active_sessions()
         scheduling_service.refresh_finished_sessions()
         self._last_event_index = event_index
-        return {
+        result = {
             "index": event_index,
             "simTime": clock,
             "event": self._format_event(event),
             "action": action,
-            "snapshot": self.get_snapshot(),
         }
+        if include_snapshot:
+            result["snapshot"] = self.get_snapshot(strategy=strategy)
+        return result
 
     def run_next(self, strategy: str = "priority"):
         next_index = self._last_event_index + 1
@@ -170,16 +174,38 @@ class AcceptanceTestService:
             raise ValueError("all acceptance events have been executed")
         return self.run_event(next_index, strategy=strategy)
 
-    def get_snapshot(self):
+    def get_snapshot(self, strategy: str = "priority"):
+        self._run_due_events(strategy=strategy)
         scheduling_service.system_tick()
-        piles = {label: self._format_pile_column(pile_id) for pile_id, label in PILE_COLUMNS}
+        snapshot_time = self._snapshot_time()
+        piles = {label: self._format_pile_column(pile_id, snapshot_time) for pile_id, label in PILE_COLUMNS}
         return {
-            "simTime": sim_clock.now().strftime("%H:%M"),
+            "simTime": snapshot_time.strftime("%H:%M"),
             "clock": sim_clock.to_dict(),
             "piles": piles,
             "waitingArea": self._format_waiting_area(),
             "lastEventIndex": self._last_event_index,
         }
+
+    def _run_due_events(self, strategy: str = "priority"):
+        if not sim_clock.is_enabled() or not sim_clock.is_realtime_tick():
+            return []
+
+        current_time = sim_clock.now()
+        current_minutes = current_time.hour * 60 + current_time.minute
+        due_results = []
+        sim_clock.disable_realtime_tick()
+        try:
+            while self._last_event_index < len(ACCEPTANCE_EVENTS):
+                next_index = self._last_event_index + 1
+                clock, _event = ACCEPTANCE_EVENTS[next_index - 1]
+                if self._clock_to_minutes(clock) > current_minutes:
+                    break
+                due_results.append(self._run_event_body(next_index, strategy=strategy, include_snapshot=False))
+            sim_clock.set_time(current_time)
+        finally:
+            sim_clock.enable_realtime_tick()
+        return due_results
 
     def _advance_to_clock(self, clock: str):
         hour, minute = [int(part) for part in clock.split(":")]
@@ -217,9 +243,13 @@ class AcceptanceTestService:
     def _handle_arrival_or_cancel(self, event: tuple[str, ...]):
         _, vehicle, mode, value = event
         if mode == "O":
-            request_id = self._require_request_id(vehicle)
-            request = queue_service.cancel_request(vehicle, request_id)
+            try:
+                request_id = self._require_request_id(vehicle)
+                request = queue_service.cancel_request(vehicle, request_id)
+            except ValueError as exc:
+                return self._skip_missing_request_event(vehicle, "cancel", exc)
             self._request_ids.pop(vehicle, None)
+            self._failed_submit_vehicles.discard(vehicle)
             return {"type": "cancel", "userId": vehicle, "requestId": request.request_id}
 
         charge_mode = "fast" if mode == "F" else "slow"
@@ -229,6 +259,7 @@ class AcceptanceTestService:
         except ValueError as exc:
             if "waiting queue is full" not in str(exc):
                 raise
+            self._failed_submit_vehicles.add(vehicle)
             return {
                 "type": "submit_failed",
                 "userId": vehicle,
@@ -238,6 +269,7 @@ class AcceptanceTestService:
                 "message": "提交失败：等候区已满",
             }
         self._request_ids[vehicle] = request.request_id
+        self._failed_submit_vehicles.discard(vehicle)
         return {
             "type": "submit",
             "userId": vehicle,
@@ -268,8 +300,11 @@ class AcceptanceTestService:
 
     def _handle_modify_amount(self, event: tuple[str, ...]):
         _, vehicle, _, amount = event
-        request_id = self._require_request_id(vehicle)
-        request = queue_service.modify_amount(vehicle, float(amount), request_id)
+        try:
+            request_id = self._require_request_id(vehicle)
+            request = queue_service.modify_amount(vehicle, float(amount), request_id)
+        except ValueError as exc:
+            return self._skip_missing_request_event(vehicle, "modify_amount", exc)
         return {
             "type": "modify_amount",
             "userId": vehicle,
@@ -286,6 +321,23 @@ class AcceptanceTestService:
             return request.request_id
         raise ValueError(f"active request not found for {vehicle}")
 
+    def _skip_missing_request_event(self, vehicle: str, action: str, exc: ValueError):
+        reason = "previous_submit_failed" if vehicle in self._failed_submit_vehicles else "active_request_missing"
+        message = (
+            f"{vehicle} 此前提交失败，无需取消"
+            if action == "cancel" and reason == "previous_submit_failed"
+            else f"{vehicle} 无有效充电请求，已跳过该验收事件"
+        )
+        return {
+            "type": "skipped",
+            "success": False,
+            "userId": vehicle,
+            "action": action,
+            "reason": reason,
+            "message": message,
+            "detail": str(exc),
+        }
+
     @staticmethod
     def _resolve_pile_alias(alias: str) -> str:
         if alias in ACCEPTANCE_FAST_PILE_ALIAS:
@@ -294,15 +346,15 @@ class AcceptanceTestService:
             return ACCEPTANCE_SLOW_PILE_ALIAS[alias]
         raise ValueError(f"unknown pile alias: {alias}")
 
-    def _format_pile_column(self, pile_id: str) -> str:
+    def _format_pile_column(self, pile_id: str, snapshot_time: datetime) -> str:
         queue = scheduling_service.pile_queues[pile_id]
         parts: list[str] = []
         if queue.charging_car:
             session = charging_session_service.get_request_active_session(queue.charging_car.request_id)
             if session:
-                session.refresh_progress()
+                current_amount = self._current_amount_at(session, snapshot_time)
                 parts.append(
-                    f"({queue.charging_car.user_id},{session.current_amount:.2f},{self._running_fee(session):.2f})"
+                    f"({queue.charging_car.user_id},{current_amount:.2f},{self._running_fee(session, current_amount):.2f})"
                 )
             else:
                 mode = "F" if queue.charging_car.charge_mode == "fast" else "T"
@@ -319,11 +371,29 @@ class AcceptanceTestService:
             parts.append(f"({car.user_id},{mode},{car.requested_amount:.2f})")
         return "-".join(parts) if parts else "-"
 
+    def _snapshot_time(self) -> datetime:
+        current = sim_clock.now()
+        if 1 <= self._last_event_index <= len(ACCEPTANCE_EVENTS):
+            clock, _event = ACCEPTANCE_EVENTS[self._last_event_index - 1]
+            hour, minute = [int(part) for part in clock.split(":")]
+            return SIMULATION_START_TIME.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        return current.replace(second=0, microsecond=0)
+
     @staticmethod
-    def _running_fee(session) -> float:
+    def _current_amount_at(session, snapshot_time: datetime) -> float:
+        if not session.start_time:
+            return 0.0
+        stable_start = session.start_time.replace(second=0, microsecond=0)
+        stable_end = session.end_time.replace(second=0, microsecond=0) if session.end_time else snapshot_time
+        stable_time = min(snapshot_time, stable_end)
+        elapsed_hours = max(0.0, (stable_time - stable_start).total_seconds() / 3600)
+        return min(session.target_amount, elapsed_hours * session.pile_power)
+
+    @staticmethod
+    def _running_fee(session, current_amount: float) -> float:
         _, unit_price = Bill._price_for_time(session.start_time)
-        charge_fee = session.current_amount * unit_price
-        service_fee = session.current_amount * SERVICE_FEE_RATE
+        charge_fee = current_amount * unit_price
+        service_fee = current_amount * SERVICE_FEE_RATE
         return round(charge_fee + service_fee, 2)
 
     @staticmethod

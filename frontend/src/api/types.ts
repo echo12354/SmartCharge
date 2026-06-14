@@ -16,6 +16,7 @@ export interface ChargingRequest {
   requestId: string
   userId: string
   vehicleLabel?: string
+  batteryCapacity?: number | null
   chargeMode: string
   requestedAmount: number
   status: string
@@ -106,6 +107,7 @@ export interface AdminQueueCar {
   userId: string
   requestId?: string
   vehicleLabel?: string
+  batteryCapacity?: number | null
   chargeMode?: string
   requestedCharge: number
   queueTime: string

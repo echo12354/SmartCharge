@@ -18,7 +18,10 @@ def run_all_acceptance():
     data = request.get_json(silent=True) or {}
     stop_at = data.get("stopAt", request.args.get("stopAt", "09:30"))
     strategy = data.get("strategy", request.args.get("strategy", "priority"))
-    return success("acceptance run completed", acceptance_test_service.run_all(stop_at=stop_at, strategy=strategy))
+    try:
+        return success("acceptance run completed", acceptance_test_service.run_all(stop_at=stop_at, strategy=strategy))
+    except Exception as exc:
+        return fail(str(exc), 500)
 
 
 @acceptance_bp.post("/events/<int:event_index>")
@@ -43,7 +46,11 @@ def run_next_acceptance_event():
 
 @acceptance_bp.get("/snapshot")
 def acceptance_snapshot():
-    return success("acceptance snapshot", acceptance_test_service.get_snapshot())
+    strategy = request.args.get("strategy", "priority")
+    try:
+        return success("acceptance snapshot", acceptance_test_service.get_snapshot(strategy=strategy))
+    except Exception as exc:
+        return fail(str(exc), 500)
 
 
 @acceptance_bp.get("/events")

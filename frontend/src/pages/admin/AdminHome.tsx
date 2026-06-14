@@ -35,19 +35,34 @@ export default function AdminHome() {
         <div className="intro-copy">
           <p className="eyebrow">管理后台</p>
           <h2>SmartCharge 充电调度计费系统后台</h2>
-          <p className="muted">面向管理员的充电站运营、调度与计费管理入口。</p>
+          <p className="muted">面向充电站运营的监控、队列、故障处理、验收测试与统计报表入口。</p>
+          <div className="intro-summary">
+            <span>后台监控</span>
+            <span>桩位管理</span>
+            <span>队列调度</span>
+            <span>统计报表</span>
+          </div>
         </div>
-        <div className="hero-tags intro-tags">
-          <span>调度</span>
-          <span>故障</span>
-          <span>计费</span>
+        <div className="admin-hero-panel" aria-hidden="true">
+          <div>
+            <strong>2</strong>
+            <span>快充桩</span>
+          </div>
+          <div>
+            <strong>3</strong>
+            <span>慢充桩</span>
+          </div>
+          <div>
+            <strong>10</strong>
+            <span>等候区容量</span>
+          </div>
         </div>
       </section>
 
       <section className="admin-entry-grid">
-        {adminEntries.map((item) => (
+        {adminEntries.map((item, index) => (
           <Link key={item.to} to={item.to} className="card admin-entry-card">
-            <span className="intro-feature-mark">{item.title.slice(0, 1)}</span>
+            <span className="intro-feature-mark">{String(index + 1).padStart(2, '0')}</span>
             <div>
               <h3>{item.title}</h3>
               <p>{item.description}</p>

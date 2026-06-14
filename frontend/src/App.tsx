@@ -4,7 +4,8 @@ import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UserWelcomePage from './pages/user/UserWelcomePage'
-import UserHome from './pages/user/UserHome'
+import UserChargePage from './pages/user/UserChargePage'
+import UserStatusPage from './pages/user/UserStatusPage'
 import BillsPage from './pages/user/BillsPage'
 import AdminHome from './pages/admin/AdminHome'
 import PilesPage from './pages/admin/PilesPage'
@@ -44,7 +45,8 @@ function AppRoutes() {
         )}
       >
         <Route index element={<UserWelcomePage />} />
-        <Route path="charge" element={<UserHome />} />
+        <Route path="charge" element={<UserChargePage />} />
+        <Route path="status" element={<UserStatusPage />} />
         <Route path="bills" element={<BillsPage />} />
       </Route>
 

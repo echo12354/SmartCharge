@@ -36,7 +36,7 @@ class FaultRecoveryService:
         self.latest_fault_by_pile[pile_id] = record.fault_id
         self._save_record_to_database(record)
 
-        requeue_cars: list[WaitingCar] = []
+        retained_cars: list[WaitingCar] = []
         active_session = charging_session_service.get_pile_active_session(pile_id)
         if active_session:
             session, _bill = charging_session_service.end_session(active_session.session_id, f"pile fault: {reason}")
@@ -44,19 +44,23 @@ class FaultRecoveryService:
                 remaining = max(0.0, session.target_amount - session.current_amount)
                 if remaining > 0:
                     queue.charging_car.requested_amount = remaining
-                    queue.charging_car.queue_position = "WAITING_AREA"
-                    queue.charging_car.assigned_pile_id = None
-                    requeue_cars.append(queue.charging_car)
+                    queue.charging_car.queue_position = "FAULT_QUEUE"
+                    queue.charging_car.assigned_pile_id = pile_id
+                    retained_cars.append(queue.charging_car)
                 else:
                     self._mark_completed_by_user(queue.charging_car.user_id)
+        elif queue.charging_car:
+            queue.charging_car.queue_position = "FAULT_QUEUE"
+            queue.charging_car.assigned_pile_id = pile_id
+            retained_cars.append(queue.charging_car)
 
         for waiting in queue.waiting_cars:
-            waiting.queue_position = "WAITING_AREA"
-            waiting.assigned_pile_id = None
-            requeue_cars.append(waiting)
+            waiting.queue_position = "FAULT_QUEUE"
+            waiting.assigned_pile_id = pile_id
+            retained_cars.append(waiting)
 
         queue.charging_car = None
-        queue.waiting_cars = []
+        queue.waiting_cars = retained_cars
         pile_management_service.mark_fault(pile_id)
 
         candidate_piles = self._same_type_piles_except(pile_id)
@@ -64,14 +68,17 @@ class FaultRecoveryService:
         scheduling_service.dispatch_paused = True
         if strategy_key in ("time", "time_sequence", "time-sequence"):
             waiting_cars = self._collect_waiting_cars_from_piles(candidate_piles)
-            pending_cars = requeue_cars + waiting_cars
+            pending_cars = list(queue.waiting_cars) + waiting_cars
+            queue.waiting_cars = []
             dispatched = scheduling_service.time_sequence_dispatch(pending_cars, candidate_piles)
             self._put_not_dispatched_back(pending_cars, dispatched)
         else:
-            scheduling_service.add_fault_priority_cars(requeue_cars)
-            dispatched = scheduling_service.dispatch_fault_priority_queue(candidate_piles)
+            dispatched = scheduling_service.dispatch_from_fault_pile_queues(
+                "fast" if pile_id in FAST_PILES else "slow",
+                candidate_piles,
+            )
 
-        if not scheduling_service.fault_priority_queue:
+        if not scheduling_service.has_fault_pile_queues() and not scheduling_service.fault_priority_queue:
             scheduling_service.dispatch_paused = False
             scheduling_service.dispatch_waiting_cars()
         return record, dispatched
@@ -86,22 +93,26 @@ class FaultRecoveryService:
             self.records[record.fault_id] = record
             self.latest_fault_by_pile[pile_id] = record.fault_id
             self._save_record_to_database(record)
-        moved_cars = self._collect_waiting_cars_from_piles(self._same_type_piles_except(pile_id))
         candidate_piles = self._same_type_piles_including(pile_id)
+        moved_cars = self._collect_waiting_cars_from_piles(candidate_piles)
         scheduling_service.dispatch_paused = bool(moved_cars)
         dispatched = scheduling_service.recovery_time_sequence_dispatch(moved_cars, candidate_piles)
-        self._put_not_dispatched_back(moved_cars, dispatched)
-        scheduling_service.dispatch_paused = False
-        scheduling_service.dispatch_waiting_cars()
+        pending = self._keep_not_dispatched_pending(moved_cars, dispatched)
+        if pending:
+            scheduling_service.dispatch_paused = True
+        else:
+            scheduling_service.dispatch_paused = False
+            scheduling_service.dispatch_waiting_cars()
         return record, dispatched
 
     def priority_dispatch(self, pile_id: str):
         """优先级调度：优先安排故障影响范围内被转移出来的车辆。"""
-        cars = self._collect_waiting_cars_from_same_type_piles(pile_id)
         scheduling_service.dispatch_paused = True
-        scheduling_service.add_fault_priority_cars(cars)
-        dispatched = scheduling_service.dispatch_fault_priority_queue(self._same_type_piles_including(pile_id))
-        if not scheduling_service.fault_priority_queue:
+        dispatched = scheduling_service.dispatch_from_fault_pile_queues(
+            "fast" if pile_id in FAST_PILES else "slow",
+            self._same_type_piles_except(pile_id),
+        )
+        if not scheduling_service.has_fault_pile_queues() and not scheduling_service.fault_priority_queue:
             scheduling_service.dispatch_paused = False
             scheduling_service.dispatch_waiting_cars()
         return dispatched
@@ -160,6 +171,20 @@ class FaultRecoveryService:
                 queue_service.waiting_queue.cars.append(car)
                 continue
             FaultRecoveryService._keep_fault_pending(car)
+
+    @staticmethod
+    def _keep_not_dispatched_pending(cars: list[WaitingCar], dispatched: list[WaitingCar]):
+        """恢复调度未分配车辆继续留在故障待调度队列，避免恢复普通叫号后顺序混乱。"""
+        dispatched_set = set(id(car) for car in dispatched)
+        pending = []
+        for car in cars:
+            if id(car) in dispatched_set:
+                continue
+            car.queue_position = "WAITING_AREA"
+            car.assigned_pile_id = None
+            FaultRecoveryService._keep_fault_pending(car)
+            pending.append(car)
+        return pending
 
     @staticmethod
     def _waiting_area_has_car(car: WaitingCar):

@@ -21,6 +21,7 @@ class ChargingRequest:
     charge_mode: str
     requested_amount: float
     vehicle_label: str = ""
+    battery_capacity: float | None = None
     request_id: str = field(default_factory=lambda: generate_id("REQ"))
     status: str = "WAITING"
     queue_number: str = ""
@@ -62,6 +63,7 @@ class ChargingRequest:
             "requestId": self.request_id,
             "userId": self.user_id,
             "vehicleLabel": self.vehicle_label,
+            "batteryCapacity": self.battery_capacity,
             "chargeMode": self.charge_mode,
             "requestedAmount": self.requested_amount,
             "status": self.status,

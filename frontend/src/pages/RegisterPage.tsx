@@ -33,7 +33,19 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <section className="auth-showcase">
+        <div className="auth-orbit" />
+        <span className="brand-icon large">⚡</span>
+        <p className="eyebrow">新用户接入</p>
+        <h2>创建账号后即可提交充电请求</h2>
+        <p>注册后进入用户端，选择快充或慢充，系统自动生成排队号并跟踪充电状态。</p>
+        <div className="auth-badges">
+          <span>排队号 F/T</span>
+          <span>状态追踪</span>
+          <span>账单详单</span>
+        </div>
+      </section>
+      <div className="auth-card refined-auth-card">
         <div className="auth-header">
           <span className="brand-icon large">⚡</span>
           <h1>用户注册</h1>

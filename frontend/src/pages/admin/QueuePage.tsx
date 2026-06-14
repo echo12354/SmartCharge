@@ -53,6 +53,7 @@ export default function QueuePage() {
                   <th>序号</th>
                   <th>位置</th>
                   <th>用户 ID</th>
+                  <th>车辆电池总容量 (度)</th>
                   <th>充电模式</th>
                   <th>请求充电量 (度)</th>
                   <th>排队时长</th>
@@ -64,7 +65,8 @@ export default function QueuePage() {
                   <tr key={`${car.pileName}-${car.userId}-${car.id}`}>
                     <td>{car.id}</td>
                     <td>{car.pileName === '等待区' ? '等候区' : (PILE_LABELS[car.pileName] || car.pileName)}</td>
-                    <td>{car.vehicleLabel || car.userId}</td>
+                    <td>{car.userId}</td>
+                    <td>{car.batteryCapacity ?? '-'}</td>
                     <td>{formatMode(car.chargeMode || pileChargeMode(car.pileName) || undefined)}</td>
                     <td>{car.requestedCharge}</td>
                     <td>{car.queueTime}</td>

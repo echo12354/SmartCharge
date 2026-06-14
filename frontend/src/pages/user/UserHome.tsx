@@ -11,6 +11,7 @@ export default function UserHome() {
   const [overview, setOverview] = useState<UserVehicleOverview | null>(null)
   const [chargeMode, setChargeMode] = useState<'fast' | 'slow'>('fast')
   const [amount, setAmount] = useState(30)
+  const [batteryCapacity, setBatteryCapacity] = useState<number | ''>(120)
   const [vehicleLabel, setVehicleLabel] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -37,8 +38,15 @@ export default function UserHome() {
     setError('')
     setMessage('')
     try {
-      await api.submitRequest(username, chargeMode, amount, vehicleLabel.trim())
+      await api.submitRequest(
+        username,
+        chargeMode,
+        amount,
+        vehicleLabel.trim(),
+        batteryCapacity === '' ? 120 : Number(batteryCapacity),
+      )
       setVehicleLabel('')
+      setBatteryCapacity(120)
       await refresh()
       setMessage('新的充电请求已提交')
     } catch (err) {
@@ -84,6 +92,16 @@ export default function UserHome() {
             <label>
               请求充电量 (度)
               <input type="number" min={1} value={amount} onChange={(e) => setAmount(Number(e.target.value))} required />
+            </label>
+            <label>
+              车辆电池总容量 (度)
+              <input
+                type="number"
+                min={1}
+                value={batteryCapacity}
+                onChange={(e) => setBatteryCapacity(e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="例如：75"
+              />
             </label>
             <button type="submit" className="btn btn-primary" disabled={loading}>
               提交请求

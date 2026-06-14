@@ -64,6 +64,7 @@ export default function MonitorPage() {
               <tr>
                 <th>充电桩</th>
                 <th>用户</th>
+                <th>车辆电池总容量</th>
                 <th>模式</th>
                 <th>请求电量</th>
                 <th>已充电量</th>
@@ -74,7 +75,7 @@ export default function MonitorPage() {
             </thead>
             <tbody>
               {pileCars.length === 0 ? (
-                <tr><td colSpan={8} className="muted">充电区暂无车辆</td></tr>
+                <tr><td colSpan={9} className="muted">充电区暂无车辆</td></tr>
               ) : pileCars.map((car) => {
                 const session = sessions.find((item) => (
                   car.requestId
@@ -86,6 +87,7 @@ export default function MonitorPage() {
                   <tr key={`${car.pileName}-${car.userId}-${car.id}`}>
                     <td>{PILE_LABELS[car.pileName] || car.pileName}</td>
                     <td>{car.vehicleLabel || car.userId}</td>
+                    <td>{car.batteryCapacity != null ? `${car.batteryCapacity} 度` : '-'}</td>
                     <td>{formatMode(mode || undefined)}</td>
                     <td>{car.requestedCharge} 度</td>
                     <td>{session ? `${session.currentAmount} 度` : '-'}</td>

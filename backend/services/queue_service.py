@@ -20,7 +20,14 @@ class QueueService:
         self.repository = RequestRepository()
         self._load_active_requests_from_database()
 
-    def submit_request(self, user_id: str, charge_mode: str, amount: float, vehicle_label: str = ""):
+    def submit_request(
+        self,
+        user_id: str,
+        charge_mode: str,
+        amount: float,
+        vehicle_label: str = "",
+        battery_capacity: float | None = None,
+    ):
         """提交充电请求。
 
         同一用户可同时提交多个请求，每个请求对应一辆车；受 `MAX_ACTIVE_REQUESTS_PER_USER` 限制。
@@ -29,6 +36,9 @@ class QueueService:
         amount = float(amount)
         if amount <= 0:
             raise ValueError("requested amount must be positive")
+        battery_capacity = float(battery_capacity) if battery_capacity not in (None, "") else 120.0
+        if battery_capacity <= 0:
+            raise ValueError("battery capacity must be positive")
 
         active_count = len(self._list_active_request_ids(user_id))
         if active_count >= MAX_ACTIVE_REQUESTS_PER_USER:
@@ -40,6 +50,7 @@ class QueueService:
             charge_mode=mode,
             requested_amount=amount,
             vehicle_label=label,
+            battery_capacity=battery_capacity,
         )
         car = WaitingCar(
             user_id=user_id,
@@ -47,6 +58,7 @@ class QueueService:
             charge_mode=mode,
             requested_amount=amount,
             vehicle_label=label,
+            battery_capacity=battery_capacity,
         )
         queue_number = self.waiting_queue.add_car(car)
         request.assign_queue_number(queue_number)
@@ -178,8 +190,11 @@ class QueueService:
 
     def get_admin_queue_info(self):
         from services.scheduling_service import scheduling_service
+        from services.pile_management_service import pile_management_service
         rows = []
         for pile_id, queue in scheduling_service.pile_queues.items():
+            pile = pile_management_service.get_pile(pile_id)
+            is_fault_pile = pile and (not pile.is_enabled or pile.status == "FAULT")
             if queue.charging_car:
                 rows.append({
                     "id": len(rows) + 1,
@@ -187,6 +202,7 @@ class QueueService:
                     "userId": queue.charging_car.user_id,
                     "requestId": queue.charging_car.request_id,
                     "vehicleLabel": queue.charging_car.vehicle_label,
+                    "batteryCapacity": queue.charging_car.battery_capacity,
                     "chargeMode": queue.charging_car.charge_mode,
                     "requestedCharge": queue.charging_car.requested_amount,
                     "queueTime": queue.charging_car.to_dict()["queueTime"],
@@ -200,11 +216,12 @@ class QueueService:
                     "userId": waiting.user_id,
                     "requestId": waiting.request_id,
                     "vehicleLabel": waiting.vehicle_label,
+                    "batteryCapacity": waiting.battery_capacity,
                     "chargeMode": waiting.charge_mode,
                     "requestedCharge": waiting.requested_amount,
                     "queueTime": waiting.to_dict()["queueTime"],
-                    "status": f"排队中 第{index}位",
-                    "statusClass": "waiting",
+                    "status": f"故障待迁移 第{index}位" if is_fault_pile else f"排队中 第{index}位",
+                    "statusClass": "fault" if is_fault_pile else "waiting",
                 })
         for car in self.waiting_queue.cars:
             rows.append({
@@ -213,6 +230,7 @@ class QueueService:
                 "userId": car.user_id,
                 "requestId": car.request_id,
                 "vehicleLabel": car.vehicle_label,
+                "batteryCapacity": car.battery_capacity,
                 "chargeMode": car.charge_mode,
                 "requestedCharge": car.requested_amount,
                 "queueTime": car.to_dict()["queueTime"],
@@ -232,6 +250,7 @@ class QueueService:
                 "username": waiting_car.user_id,
                 "requestId": waiting_car.request_id,
                 "vehicleLabel": waiting_car.vehicle_label,
+                "batteryCapacity": waiting_car.battery_capacity,
                 "requestedCharge": waiting_car.requested_amount,
                 "queueTime": waiting_car.to_dict()["queueTime"],
             })

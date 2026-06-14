@@ -28,7 +28,14 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <section className="auth-showcase">
+        <div className="auth-orbit" />
+        <span className="brand-icon large">⚡</span>
+        <p className="eyebrow">SmartCharge</p>
+        <h2>智能充电，更省时、更省心</h2>
+        <p>支持快充、慢充预约，实时查看排队进度与充电状态，自动完成计费与账单查询。</p>
+      </section>
+      <div className="auth-card refined-auth-card">
         <div className="auth-header">
           <span className="brand-icon large">⚡</span>
           <h1>SmartCharge</h1>
@@ -53,8 +60,8 @@ export default function LoginPage() {
         </p>
         <div className="hint-box">
           <strong>测试账号</strong>
-          <span>用户：user / 123</span>
-          <span>管理员：admin / 123</span>
+          <div className="hint-row"><span>用户端</span><strong>user / 123</strong></div>
+          <div className="hint-row"><span>管理员</span><strong>admin / 123</strong></div>
         </div>
       </div>
     </div>

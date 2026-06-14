@@ -113,6 +113,7 @@ class RequestRepository:
             user_id=row["user_id"],
             charge_mode=row["charge_mode"],
             requested_amount=float(row["requested_amount"]),
+            battery_capacity=row.get("battery_capacity"),
             status=row["status"],
             queue_number=row["queue_number"],
             assigned_pile_id=row["assigned_pile_id"],

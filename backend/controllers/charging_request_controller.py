@@ -48,6 +48,7 @@ def create_request():
             data.get("chargeMode") or data.get("chargeType"),
             data.get("amount") or data.get("targetAmount"),
             data.get("vehicleLabel") or data.get("vehicleName") or "",
+            data.get("batteryCapacity"),
         )
         return success("charging request submitted", charging_request.to_dict(), 201)
     except (ValueError, TypeError) as exc:
