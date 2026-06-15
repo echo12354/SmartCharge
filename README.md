@@ -116,13 +116,21 @@ VITE_API_BASE_URL=http://localhost:5001
 
 ## 验收用例自动测试（模拟时钟）
 
-已对齐 `作业验收用例.xlsx` 参数：**N=10、M=3、比例尺 1:10、6:00 起算**。启用模拟时钟后，充电进度与费用按**模拟时间**计算（不再依赖真实等待 30 秒）。
+已对齐 `作业验收用例.xlsx` 参数：**N=10、M=3、比例尺 1:10、6:00 起算**。启用模拟时钟后，充电进度与费用按**模拟时间**计算。验收快照费用按**各时段实际充入电量**分段计费：7:00 前谷时、7:00～10:00 平时、10:00 起峰时等，服务费固定 0.8 元/度。
 
-### 一键跑完全部事件（推荐）
+### 一键跑完全部事件（推荐，无需启动后端）
 
 ```bash
 cd backend
-python scripts/run_acceptance_test.py --stop 09:30
+python scripts/run_acceptance_test.py --stop 10:50 -o acceptance_result.json
+```
+
+默认**本地直跑**，直接调用验收服务，几秒内完成，不依赖 `app.py`。
+
+若要通过 HTTP 接口测试（需先 `python app.py`）：
+
+```bash
+python scripts/run_acceptance_test.py --api --stop 10:50 -o acceptance_result.json
 ```
 
 单条事件调试：

@@ -29,6 +29,7 @@ class BillingService:
             start_time=session.start_time,
             end_time=session.end_time,
             status=session.status,
+            pile_power=session.pile_power,
         )
         self.bills_by_id[bill.bill_id] = bill
         self.bill_by_session[session.session_id] = bill

@@ -1,11 +1,12 @@
 """将最新验收快照写入《作业验收用例.xlsx》。
 
-用法（先启动后端服务，再在 backend 目录执行）：
+用法（在 backend 目录执行）：
     pip install openpyxl
-    python scripts/fill_acceptance_xlsx.py --from-api --stop 10:50
     python scripts/run_acceptance_test.py --stop 10:50 -o acceptance_result.json
-    python scripts/fill_acceptance_xlsx.py
-    python scripts/fill_acceptance_xlsx.py -i acceptance_result.json -t ../作业验收用例.xlsx -o ../作业验收用例_已填写.xlsx
+    python scripts/fill_acceptance_xlsx.py -i acceptance_result.json -t ../作业验收用例_终极版.xlsx -o ../作业验收用例_已填写.xlsx
+
+或直接本地跑验收并填表（无需启动 app.py）：
+    python scripts/fill_acceptance_xlsx.py --from-api --stop 10:50 -t ../作业验收用例_终极版.xlsx -o ../作业验收用例_已填写.xlsx
 """
 
 from __future__ import annotations
@@ -21,7 +22,11 @@ PROJECT_ROOT = os.path.dirname(BACKEND_ROOT)
 if BACKEND_ROOT not in sys.path:
     sys.path.insert(0, BACKEND_ROOT)
 
-from scripts.run_acceptance_test import DEFAULT_BASE_URL, run_acceptance
+from scripts.run_acceptance_test import (
+    DEFAULT_BASE_URL,
+    run_acceptance_api,
+    run_acceptance_local,
+)
 
 PILE_LABELS = ["快充1", "快充2", "慢充1", "慢充2", "慢充3"]
 # 测试用例 sheet：第 1 条事件从第 3 行开始，每条事件占 3 行。
@@ -140,8 +145,9 @@ def main():
     parser.add_argument(
         "--from-api",
         action="store_true",
-        help="通过 /api/acceptance/* 执行事件并读取每步 snapshot 后直接填表",
+        help="先执行验收测试再填表（默认本地直跑，无需 app.py）",
     )
+    parser.add_argument("--api", action="store_true", help="配合 --from-api，通过 HTTP 调用后端（需先启动 app.py）")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Backend base URL")
     parser.add_argument("--stop", default="10:50", help="Stop at simulated clock when --from-api is used")
     parser.add_argument("--strategy", default="priority", help="Fault strategy when --from-api is used")
@@ -149,7 +155,11 @@ def main():
     args = parser.parse_args()
 
     if args.from_api:
-        payload = run_acceptance(args.base_url, stop_at=args.stop, strategy=args.strategy)
+        payload = (
+            run_acceptance_api(args.base_url, stop_at=args.stop, strategy=args.strategy)
+            if args.api
+            else run_acceptance_local(stop_at=args.stop, strategy=args.strategy)
+        )
         results = payload["results"]
         if args.save_json:
             with open(args.save_json, "w", encoding="utf-8") as file:

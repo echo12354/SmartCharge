@@ -11,7 +11,6 @@ from config.settings import (
     ACCEPTANCE_FAST_PILE_ALIAS,
     ACCEPTANCE_SLOW_PILE_ALIAS,
     FAST_PILES,
-    SERVICE_FEE_RATE,
     SIMULATION_START_TIME,
     SLOW_PILES,
 )
@@ -354,7 +353,8 @@ class AcceptanceTestService:
             if session:
                 current_amount = self._current_amount_at(session, snapshot_time)
                 parts.append(
-                    f"({queue.charging_car.user_id},{current_amount:.2f},{self._running_fee(session, current_amount):.2f})"
+                    f"({queue.charging_car.user_id},{current_amount:.2f},"
+                    f"{self._running_fee(session, snapshot_time):.2f})"
                 )
             else:
                 mode = "F" if queue.charging_car.charge_mode == "fast" else "T"
@@ -390,11 +390,17 @@ class AcceptanceTestService:
         return min(session.target_amount, elapsed_hours * session.pile_power)
 
     @staticmethod
-    def _running_fee(session, current_amount: float) -> float:
-        _, unit_price = Bill._price_for_time(session.start_time)
-        charge_fee = current_amount * unit_price
-        service_fee = current_amount * SERVICE_FEE_RATE
-        return round(charge_fee + service_fee, 2)
+    def _running_fee(session, snapshot_time: datetime) -> float:
+        if not session.start_time:
+            return 0.0
+        stable_start = session.start_time.replace(second=0, microsecond=0)
+        stable_end = snapshot_time.replace(second=0, microsecond=0)
+        return Bill.running_fee_for_charging(
+            stable_start,
+            stable_end,
+            session.pile_power,
+            session.target_amount,
+        )
 
     @staticmethod
     def _format_event(event: tuple[str, ...]) -> str:

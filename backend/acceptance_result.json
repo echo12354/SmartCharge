@@ -7,24 +7,24 @@
       "simTime": "06:00",
       "event": "(A,V1,T,40)",
       "action": {
-        "amount": 40.0,
-        "chargeMode": "slow",
-        "queueNumber": "T1",
-        "requestId": "REQ202606141701246C95BFFA",
         "type": "submit",
-        "userId": "V1"
+        "userId": "V1",
+        "requestId": "REQ202606151129031EAD390B",
+        "queueNumber": "T1",
+        "chargeMode": "slow",
+        "amount": 40.0
       },
       "snapshot": {
+        "simTime": "06:00",
         "clock": {
-          "currentTime": "2026-06-03T06:00:00.440700",
-          "displayTime": "06:00",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:00:00",
+          "displayTime": "06:00",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 1,
         "piles": {
           "快充1": "-",
           "快充2": "-",
@@ -32,8 +32,8 @@
           "慢充2": "-",
           "慢充3": "-"
         },
-        "simTime": "06:00",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 1
       }
     },
     {
@@ -41,24 +41,24 @@
       "simTime": "06:05",
       "event": "(A,V2,T,30)",
       "action": {
-        "amount": 30.0,
-        "chargeMode": "slow",
-        "queueNumber": "T2",
-        "requestId": "REQ2026061417012459579AAB",
         "type": "submit",
-        "userId": "V2"
+        "userId": "V2",
+        "requestId": "REQ2026061511290384D1F5C5",
+        "queueNumber": "T2",
+        "chargeMode": "slow",
+        "amount": 30.0
       },
       "snapshot": {
+        "simTime": "06:05",
         "clock": {
-          "currentTime": "2026-06-03T06:05:00.310000",
-          "displayTime": "06:05",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:05:00",
+          "displayTime": "06:05",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 2,
         "piles": {
           "快充1": "-",
           "快充2": "-",
@@ -66,8 +66,8 @@
           "慢充2": "(V2,0.00,0.00)",
           "慢充3": "-"
         },
-        "simTime": "06:05",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 2
       }
     },
     {
@@ -75,24 +75,24 @@
       "simTime": "06:10",
       "event": "(A,V3,F,100)",
       "action": {
-        "amount": 100.0,
-        "chargeMode": "fast",
-        "queueNumber": "F1",
-        "requestId": "REQ2026061417012481BBB11B",
         "type": "submit",
-        "userId": "V3"
+        "userId": "V3",
+        "requestId": "REQ202606151129036E20C10E",
+        "queueNumber": "F1",
+        "chargeMode": "fast",
+        "amount": 100.0
       },
       "snapshot": {
+        "simTime": "06:10",
         "clock": {
-          "currentTime": "2026-06-03T06:10:00.824440",
-          "displayTime": "06:10",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:10:00",
+          "displayTime": "06:10",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 3,
         "piles": {
           "快充1": "(V3,0.00,0.00)",
           "快充2": "-",
@@ -100,8 +100,8 @@
           "慢充2": "(V2,0.83,1.00)",
           "慢充3": "-"
         },
-        "simTime": "06:10",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 3
       }
     },
     {
@@ -109,24 +109,24 @@
       "simTime": "06:15",
       "event": "(A,V4,F,120)",
       "action": {
-        "amount": 120.0,
-        "chargeMode": "fast",
-        "queueNumber": "F2",
-        "requestId": "REQ2026061417012408EEFDCD",
         "type": "submit",
-        "userId": "V4"
+        "userId": "V4",
+        "requestId": "REQ20260615112903226D8593",
+        "queueNumber": "F2",
+        "chargeMode": "fast",
+        "amount": 120.0
       },
       "snapshot": {
+        "simTime": "06:15",
         "clock": {
-          "currentTime": "2026-06-03T06:15:01.531660",
-          "displayTime": "06:15",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:15:00",
+          "displayTime": "06:15",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 4,
         "piles": {
           "快充1": "(V3,2.50,3.00)",
           "快充2": "(V4,0.00,0.00)",
@@ -134,8 +134,8 @@
           "慢充2": "(V2,1.67,2.00)",
           "慢充3": "-"
         },
-        "simTime": "06:15",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 4
       }
     },
     {
@@ -143,21 +143,21 @@
       "simTime": "06:20",
       "event": "(A,V2,O,0)",
       "action": {
-        "requestId": "REQ2026061417012459579AAB",
         "type": "cancel",
-        "userId": "V2"
+        "userId": "V2",
+        "requestId": "REQ2026061511290384D1F5C5"
       },
       "snapshot": {
+        "simTime": "06:20",
         "clock": {
-          "currentTime": "2026-06-03T06:20:00.288720",
-          "displayTime": "06:20",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:20:00",
+          "displayTime": "06:20",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 5,
         "piles": {
           "快充1": "(V3,5.00,6.00)",
           "快充2": "(V4,2.50,3.00)",
@@ -165,8 +165,8 @@
           "慢充2": "-",
           "慢充3": "-"
         },
-        "simTime": "06:20",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 5
       }
     },
     {
@@ -174,24 +174,24 @@
       "simTime": "06:25",
       "event": "(A,V5,T,20)",
       "action": {
-        "amount": 20.0,
-        "chargeMode": "slow",
-        "queueNumber": "T3",
-        "requestId": "REQ202606141701256F0CB825",
         "type": "submit",
-        "userId": "V5"
+        "userId": "V5",
+        "requestId": "REQ20260615112903A05178EB",
+        "queueNumber": "T3",
+        "chargeMode": "slow",
+        "amount": 20.0
       },
       "snapshot": {
+        "simTime": "06:25",
         "clock": {
-          "currentTime": "2026-06-03T06:25:00.940640",
-          "displayTime": "06:25",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:25:00",
+          "displayTime": "06:25",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 6,
         "piles": {
           "快充1": "(V3,7.50,9.00)",
           "快充2": "(V4,5.00,6.00)",
@@ -199,8 +199,8 @@
           "慢充2": "(V5,0.00,0.00)",
           "慢充3": "-"
         },
-        "simTime": "06:25",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 6
       }
     },
     {
@@ -208,24 +208,24 @@
       "simTime": "06:30",
       "event": "(A,V6,T,20)",
       "action": {
-        "amount": 20.0,
-        "chargeMode": "slow",
-        "queueNumber": "T4",
-        "requestId": "REQ20260614170126BB7874AC",
         "type": "submit",
-        "userId": "V6"
+        "userId": "V6",
+        "requestId": "REQ20260615112903EAC653D3",
+        "queueNumber": "T4",
+        "chargeMode": "slow",
+        "amount": 20.0
       },
       "snapshot": {
+        "simTime": "06:30",
         "clock": {
-          "currentTime": "2026-06-03T06:30:00.898820",
-          "displayTime": "06:30",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:30:00",
+          "displayTime": "06:30",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 7,
         "piles": {
           "快充1": "(V3,10.00,12.00)",
           "快充2": "(V4,7.50,9.00)",
@@ -233,8 +233,8 @@
           "慢充2": "(V5,0.83,1.00)",
           "慢充3": "(V6,0.00,0.00)"
         },
-        "simTime": "06:30",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 7
       }
     },
     {
@@ -242,24 +242,24 @@
       "simTime": "06:35",
       "event": "(A,V7,F,110)",
       "action": {
-        "amount": 110.0,
-        "chargeMode": "fast",
-        "queueNumber": "F3",
-        "requestId": "REQ20260614170127AF5974AE",
         "type": "submit",
-        "userId": "V7"
+        "userId": "V7",
+        "requestId": "REQ20260615112903554B26A4",
+        "queueNumber": "F3",
+        "chargeMode": "fast",
+        "amount": 110.0
       },
       "snapshot": {
+        "simTime": "06:35",
         "clock": {
-          "currentTime": "2026-06-03T06:35:01.572010",
-          "displayTime": "06:35",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:35:00",
+          "displayTime": "06:35",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 8,
         "piles": {
           "快充1": "(V3,12.50,15.00)-(V7,F,110.00)",
           "快充2": "(V4,10.00,12.00)",
@@ -267,8 +267,8 @@
           "慢充2": "(V5,1.67,2.00)",
           "慢充3": "(V6,0.83,1.00)"
         },
-        "simTime": "06:35",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 8
       }
     },
     {
@@ -276,24 +276,24 @@
       "simTime": "06:40",
       "event": "(A,V8,T,20)",
       "action": {
-        "amount": 20.0,
-        "chargeMode": "slow",
-        "queueNumber": "T5",
-        "requestId": "REQ202606141701275AF7D256",
         "type": "submit",
-        "userId": "V8"
+        "userId": "V8",
+        "requestId": "REQ2026061511290340BE5417",
+        "queueNumber": "T5",
+        "chargeMode": "slow",
+        "amount": 20.0
       },
       "snapshot": {
+        "simTime": "06:40",
         "clock": {
-          "currentTime": "2026-06-03T06:40:00.703290",
-          "displayTime": "06:40",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:40:00",
+          "displayTime": "06:40",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 9,
         "piles": {
           "快充1": "(V3,15.00,18.00)-(V7,F,110.00)",
           "快充2": "(V4,12.50,15.00)",
@@ -301,8 +301,8 @@
           "慢充2": "(V5,2.50,3.00)-(V8,T,20.00)",
           "慢充3": "(V6,1.67,2.00)"
         },
-        "simTime": "06:40",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 9
       }
     },
     {
@@ -310,24 +310,24 @@
       "simTime": "06:45",
       "event": "(A,V9,F,105)",
       "action": {
-        "amount": 105.0,
-        "chargeMode": "fast",
-        "queueNumber": "F4",
-        "requestId": "REQ2026061417012899B09F8B",
         "type": "submit",
-        "userId": "V9"
+        "userId": "V9",
+        "requestId": "REQ20260615112903BF02BED3",
+        "queueNumber": "F4",
+        "chargeMode": "fast",
+        "amount": 105.0
       },
       "snapshot": {
+        "simTime": "06:45",
         "clock": {
-          "currentTime": "2026-06-03T06:45:00.872720",
-          "displayTime": "06:45",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:45:00",
+          "displayTime": "06:45",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 10,
         "piles": {
           "快充1": "(V3,17.50,21.00)-(V7,F,110.00)",
           "快充2": "(V4,15.00,18.00)-(V9,F,105.00)",
@@ -335,8 +335,8 @@
           "慢充2": "(V5,3.33,4.00)-(V8,T,20.00)",
           "慢充3": "(V6,2.50,3.00)"
         },
-        "simTime": "06:45",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 10
       }
     },
     {
@@ -344,24 +344,24 @@
       "simTime": "06:50",
       "event": "(A,V10,T,10)",
       "action": {
-        "amount": 10.0,
-        "chargeMode": "slow",
-        "queueNumber": "T6",
-        "requestId": "REQ20260614170128552EF173",
         "type": "submit",
-        "userId": "V10"
+        "userId": "V10",
+        "requestId": "REQ202606151129030BA05FD5",
+        "queueNumber": "T6",
+        "chargeMode": "slow",
+        "amount": 10.0
       },
       "snapshot": {
+        "simTime": "06:50",
         "clock": {
-          "currentTime": "2026-06-03T06:50:01.226530",
-          "displayTime": "06:50",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:50:00",
+          "displayTime": "06:50",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 11,
         "piles": {
           "快充1": "(V3,20.00,24.00)-(V7,F,110.00)",
           "快充2": "(V4,17.50,21.00)-(V9,F,105.00)",
@@ -369,8 +369,8 @@
           "慢充2": "(V5,4.17,5.00)-(V8,T,20.00)",
           "慢充3": "(V6,3.33,4.00)-(V10,T,10.00)"
         },
-        "simTime": "06:50",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 11
       }
     },
     {
@@ -378,24 +378,24 @@
       "simTime": "06:55",
       "event": "(A,V11,F,110)",
       "action": {
-        "amount": 110.0,
-        "chargeMode": "fast",
-        "queueNumber": "F5",
-        "requestId": "REQ20260614170129AAC4E22F",
         "type": "submit",
-        "userId": "V11"
+        "userId": "V11",
+        "requestId": "REQ202606151129036DBC6908",
+        "queueNumber": "F5",
+        "chargeMode": "fast",
+        "amount": 110.0
       },
       "snapshot": {
+        "simTime": "06:55",
         "clock": {
-          "currentTime": "2026-06-03T06:55:01.230170",
-          "displayTime": "06:55",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T06:55:00",
+          "displayTime": "06:55",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 12,
         "piles": {
           "快充1": "(V3,22.50,27.00)-(V7,F,110.00)-(V11,F,110.00)",
           "快充2": "(V4,20.00,24.00)-(V9,F,105.00)",
@@ -403,8 +403,8 @@
           "慢充2": "(V5,5.00,6.00)-(V8,T,20.00)",
           "慢充3": "(V6,4.17,5.00)-(V10,T,10.00)"
         },
-        "simTime": "06:55",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 12
       }
     },
     {
@@ -412,24 +412,24 @@
       "simTime": "07:00",
       "event": "(A,V12,F,90)",
       "action": {
-        "amount": 90.0,
-        "chargeMode": "fast",
-        "queueNumber": "F6",
-        "requestId": "REQ2026061417013076DBDA24",
         "type": "submit",
-        "userId": "V12"
+        "userId": "V12",
+        "requestId": "REQ202606151129035D7E34F7",
+        "queueNumber": "F6",
+        "chargeMode": "fast",
+        "amount": 90.0
       },
       "snapshot": {
+        "simTime": "07:00",
         "clock": {
-          "currentTime": "2026-06-03T07:00:01.339430",
-          "displayTime": "07:00",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:00:00",
+          "displayTime": "07:00",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 13,
         "piles": {
           "快充1": "(V3,25.00,30.00)-(V7,F,110.00)-(V11,F,110.00)",
           "快充2": "(V4,22.50,27.00)-(V9,F,105.00)-(V12,F,90.00)",
@@ -437,8 +437,8 @@
           "慢充2": "(V5,5.83,7.00)-(V8,T,20.00)",
           "慢充3": "(V6,5.00,6.00)-(V10,T,10.00)"
         },
-        "simTime": "07:00",
-        "waitingArea": "-"
+        "waitingArea": "-",
+        "lastEventIndex": 13
       }
     },
     {
@@ -446,33 +446,33 @@
       "simTime": "07:05",
       "event": "(A,V13,F,110)",
       "action": {
-        "amount": 110.0,
-        "chargeMode": "fast",
-        "queueNumber": "F7",
-        "requestId": "REQ20260614170130563CB7ED",
         "type": "submit",
-        "userId": "V13"
+        "userId": "V13",
+        "requestId": "REQ20260615112903A82188BB",
+        "queueNumber": "F7",
+        "chargeMode": "fast",
+        "amount": 110.0
       },
       "snapshot": {
+        "simTime": "07:05",
         "clock": {
-          "currentTime": "2026-06-03T07:05:00.827550",
-          "displayTime": "07:05",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:05:00",
+          "displayTime": "07:05",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 14,
         "piles": {
-          "快充1": "(V3,27.50,33.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,25.00,30.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,10.83,13.00)",
-          "慢充2": "(V5,6.67,8.00)-(V8,T,20.00)",
-          "慢充3": "(V6,5.83,7.00)-(V10,T,10.00)"
+          "快充1": "(V3,27.50,33.75)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,25.00,30.75)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,10.83,13.25)",
+          "慢充2": "(V5,6.67,8.25)-(V8,T,20.00)",
+          "慢充3": "(V6,5.83,7.25)-(V10,T,10.00)"
         },
-        "simTime": "07:05",
-        "waitingArea": "(V13,F,110.00)"
+        "waitingArea": "(V13,F,110.00)",
+        "lastEventIndex": 14
       }
     },
     {
@@ -480,33 +480,33 @@
       "simTime": "07:10",
       "event": "(A,V14,F,95)",
       "action": {
-        "amount": 95.0,
-        "chargeMode": "fast",
-        "queueNumber": "F8",
-        "requestId": "REQ20260614170131D9021430",
         "type": "submit",
-        "userId": "V14"
+        "userId": "V14",
+        "requestId": "REQ20260615112903DF3C3F18",
+        "queueNumber": "F8",
+        "chargeMode": "fast",
+        "amount": 95.0
       },
       "snapshot": {
+        "simTime": "07:10",
         "clock": {
-          "currentTime": "2026-06-03T07:10:01.487040",
-          "displayTime": "07:10",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:10:00",
+          "displayTime": "07:10",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 15,
         "piles": {
-          "快充1": "(V3,30.00,36.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,27.50,33.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,11.67,14.00)",
-          "慢充2": "(V5,7.50,9.00)-(V8,T,20.00)",
-          "慢充3": "(V6,6.67,8.00)-(V10,T,10.00)"
+          "快充1": "(V3,30.00,37.50)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,27.50,34.50)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,11.67,14.50)",
+          "慢充2": "(V5,7.50,9.50)-(V8,T,20.00)",
+          "慢充3": "(V6,6.67,8.50)-(V10,T,10.00)"
         },
-        "simTime": "07:10",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)",
+        "lastEventIndex": 15
       }
     },
     {
@@ -514,33 +514,33 @@
       "simTime": "07:15",
       "event": "(A,V15,T,10)",
       "action": {
-        "amount": 10.0,
-        "chargeMode": "slow",
-        "queueNumber": "T7",
-        "requestId": "REQ2026061417013132EA75F4",
         "type": "submit",
-        "userId": "V15"
+        "userId": "V15",
+        "requestId": "REQ20260615112903E2511CC1",
+        "queueNumber": "T7",
+        "chargeMode": "slow",
+        "amount": 10.0
       },
       "snapshot": {
+        "simTime": "07:15",
         "clock": {
-          "currentTime": "2026-06-03T07:15:02.323860",
-          "displayTime": "07:15",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:15:00",
+          "displayTime": "07:15",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 16,
         "piles": {
-          "快充1": "(V3,32.50,39.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,30.00,36.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,12.50,15.00)",
-          "慢充2": "(V5,8.33,10.00)-(V8,T,20.00)",
-          "慢充3": "(V6,7.50,9.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,32.50,41.25)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,30.00,38.25)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,12.50,15.75)",
+          "慢充2": "(V5,8.33,10.75)-(V8,T,20.00)",
+          "慢充3": "(V6,7.50,9.75)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:15",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)",
+        "lastEventIndex": 16
       }
     },
     {
@@ -548,33 +548,33 @@
       "simTime": "07:20",
       "event": "(A,V16,F,60)",
       "action": {
-        "amount": 60.0,
-        "chargeMode": "fast",
-        "queueNumber": "F9",
-        "requestId": "REQ20260614170133950C7935",
         "type": "submit",
-        "userId": "V16"
+        "userId": "V16",
+        "requestId": "REQ2026061511290309F84FBB",
+        "queueNumber": "F9",
+        "chargeMode": "fast",
+        "amount": 60.0
       },
       "snapshot": {
+        "simTime": "07:20",
         "clock": {
-          "currentTime": "2026-06-03T07:20:01.473340",
-          "displayTime": "07:20",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:20:00",
+          "displayTime": "07:20",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 17,
         "piles": {
-          "快充1": "(V3,35.00,42.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,32.50,39.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,13.33,16.00)",
-          "慢充2": "(V5,9.17,11.00)-(V8,T,20.00)",
-          "慢充3": "(V6,8.33,10.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,35.00,45.00)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,32.50,42.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,13.33,17.00)",
+          "慢充2": "(V5,9.17,12.00)-(V8,T,20.00)",
+          "慢充3": "(V6,8.33,11.00)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:20",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)",
+        "lastEventIndex": 17
       }
     },
     {
@@ -582,33 +582,33 @@
       "simTime": "07:25",
       "event": "(A,V17,T,10)",
       "action": {
-        "amount": 10.0,
-        "chargeMode": "slow",
-        "queueNumber": "T8",
-        "requestId": "REQ202606141701331FDF4B21",
         "type": "submit",
-        "userId": "V17"
+        "userId": "V17",
+        "requestId": "REQ202606151129039ABBDE1D",
+        "queueNumber": "T8",
+        "chargeMode": "slow",
+        "amount": 10.0
       },
       "snapshot": {
+        "simTime": "07:25",
         "clock": {
-          "currentTime": "2026-06-03T07:25:02.482300",
-          "displayTime": "07:25",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:25:00",
+          "displayTime": "07:25",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 18,
         "piles": {
-          "快充1": "(V3,37.50,45.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,35.00,42.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,14.17,17.00)-(V17,T,10.00)",
-          "慢充2": "(V5,10.00,12.00)-(V8,T,20.00)",
-          "慢充3": "(V6,9.17,11.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,37.50,48.75)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,35.00,45.75)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,14.17,18.25)-(V17,T,10.00)",
+          "慢充2": "(V5,10.00,13.25)-(V8,T,20.00)",
+          "慢充3": "(V6,9.17,12.25)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:25",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)",
+        "lastEventIndex": 18
       }
     },
     {
@@ -616,33 +616,33 @@
       "simTime": "07:30",
       "event": "(A,V18,T,7.5)",
       "action": {
-        "amount": 7.5,
-        "chargeMode": "slow",
-        "queueNumber": "T9",
-        "requestId": "REQ20260614170135BC5D4B4F",
         "type": "submit",
-        "userId": "V18"
+        "userId": "V18",
+        "requestId": "REQ20260615112903275A6737",
+        "queueNumber": "T9",
+        "chargeMode": "slow",
+        "amount": 7.5
       },
       "snapshot": {
+        "simTime": "07:30",
         "clock": {
-          "currentTime": "2026-06-03T07:30:01.989520",
-          "displayTime": "07:30",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:30:00",
+          "displayTime": "07:30",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 19,
         "piles": {
-          "快充1": "(V3,40.00,48.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,37.50,45.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,15.00,18.00)-(V17,T,10.00)",
-          "慢充2": "(V5,10.83,13.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,10.00,12.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,40.00,52.50)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,37.50,49.50)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,15.00,19.50)-(V17,T,10.00)",
+          "慢充2": "(V5,10.83,14.50)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,10.00,13.50)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:30",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)",
+        "lastEventIndex": 19
       }
     },
     {
@@ -650,33 +650,33 @@
       "simTime": "07:35",
       "event": "(A,V19,F,75)",
       "action": {
-        "amount": 75.0,
-        "chargeMode": "fast",
-        "queueNumber": "F10",
-        "requestId": "REQ20260614170136F028D199",
         "type": "submit",
-        "userId": "V19"
+        "userId": "V19",
+        "requestId": "REQ202606151129034941FBBE",
+        "queueNumber": "F10",
+        "chargeMode": "fast",
+        "amount": 75.0
       },
       "snapshot": {
+        "simTime": "07:35",
         "clock": {
-          "currentTime": "2026-06-03T07:35:01.477230",
-          "displayTime": "07:35",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:35:00",
+          "displayTime": "07:35",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 20,
         "piles": {
-          "快充1": "(V3,42.50,51.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,40.00,48.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,15.83,19.00)-(V17,T,10.00)",
-          "慢充2": "(V5,11.67,14.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,10.83,13.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,42.50,56.25)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,40.00,53.25)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,15.83,20.75)-(V17,T,10.00)",
+          "慢充2": "(V5,11.67,15.75)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,10.83,14.75)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:35",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)",
+        "lastEventIndex": 20
       }
     },
     {
@@ -684,33 +684,33 @@
       "simTime": "07:40",
       "event": "(A,V20,F,95)",
       "action": {
-        "amount": 95.0,
-        "chargeMode": "fast",
-        "queueNumber": "F11",
-        "requestId": "REQ2026061417013751C1F474",
         "type": "submit",
-        "userId": "V20"
+        "userId": "V20",
+        "requestId": "REQ20260615112903339CE97E",
+        "queueNumber": "F11",
+        "chargeMode": "fast",
+        "amount": 95.0
       },
       "snapshot": {
+        "simTime": "07:40",
         "clock": {
-          "currentTime": "2026-06-03T07:40:01.875650",
-          "displayTime": "07:40",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:40:00",
+          "displayTime": "07:40",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 21,
         "piles": {
-          "快充1": "(V3,45.00,54.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,42.50,51.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,16.67,20.00)-(V17,T,10.00)",
-          "慢充2": "(V5,12.50,15.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,11.67,14.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,45.00,60.00)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,42.50,57.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,16.67,22.00)-(V17,T,10.00)",
+          "慢充2": "(V5,12.50,17.00)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,11.67,16.00)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:40",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)",
+        "lastEventIndex": 21
       }
     },
     {
@@ -718,33 +718,33 @@
       "simTime": "07:45",
       "event": "(A,V21,F,95)",
       "action": {
-        "amount": 95.0,
-        "chargeMode": "fast",
-        "queueNumber": "F12",
-        "requestId": "REQ2026061417013858CC3C86",
         "type": "submit",
-        "userId": "V21"
+        "userId": "V21",
+        "requestId": "REQ202606151129030EA5CA6B",
+        "queueNumber": "F12",
+        "chargeMode": "fast",
+        "amount": 95.0
       },
       "snapshot": {
+        "simTime": "07:45",
         "clock": {
-          "currentTime": "2026-06-03T07:45:01.629240",
-          "displayTime": "07:45",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:45:00",
+          "displayTime": "07:45",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 22,
         "piles": {
-          "快充1": "(V3,47.50,57.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,45.00,54.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,17.50,21.00)-(V17,T,10.00)",
-          "慢充2": "(V5,13.33,16.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,12.50,15.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,47.50,63.75)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,45.00,60.75)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,17.50,23.25)-(V17,T,10.00)",
+          "慢充2": "(V5,13.33,18.25)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,12.50,17.25)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:45",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)",
+        "lastEventIndex": 22
       }
     },
     {
@@ -752,33 +752,33 @@
       "simTime": "07:50",
       "event": "(A,V22,F,70)",
       "action": {
-        "amount": 70.0,
-        "chargeMode": "fast",
-        "queueNumber": "F13",
-        "requestId": "REQ202606141701399BB6ABAB",
         "type": "submit",
-        "userId": "V22"
+        "userId": "V22",
+        "requestId": "REQ202606151129030C57393C",
+        "queueNumber": "F13",
+        "chargeMode": "fast",
+        "amount": 70.0
       },
       "snapshot": {
+        "simTime": "07:50",
         "clock": {
-          "currentTime": "2026-06-03T07:50:01.779050",
-          "displayTime": "07:50",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:50:00",
+          "displayTime": "07:50",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 23,
         "piles": {
-          "快充1": "(V3,50.00,60.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,47.50,57.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,18.33,22.00)-(V17,T,10.00)",
-          "慢充2": "(V5,14.17,17.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,13.33,16.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,50.00,67.50)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,47.50,64.50)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,18.33,24.50)-(V17,T,10.00)",
+          "慢充2": "(V5,14.17,19.50)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,13.33,18.50)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:50",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)",
+        "lastEventIndex": 23
       }
     },
     {
@@ -786,33 +786,33 @@
       "simTime": "07:55",
       "event": "(A,V23,F,80)",
       "action": {
-        "amount": 80.0,
-        "chargeMode": "fast",
-        "queueNumber": "F14",
-        "requestId": "REQ2026061417013988121A94",
         "type": "submit",
-        "userId": "V23"
+        "userId": "V23",
+        "requestId": "REQ20260615112903378C7072",
+        "queueNumber": "F14",
+        "chargeMode": "fast",
+        "amount": 80.0
       },
       "snapshot": {
+        "simTime": "07:55",
         "clock": {
-          "currentTime": "2026-06-03T07:55:01.838190",
-          "displayTime": "07:55",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T07:55:00",
+          "displayTime": "07:55",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 24,
         "piles": {
-          "快充1": "(V3,52.50,63.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,50.00,60.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,19.17,23.00)-(V17,T,10.00)",
-          "慢充2": "(V5,15.00,18.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,14.17,17.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,52.50,71.25)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,50.00,68.25)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,19.17,25.75)-(V17,T,10.00)",
+          "慢充2": "(V5,15.00,20.75)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,14.17,19.75)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "07:55",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 24
       }
     },
     {
@@ -820,33 +820,33 @@
       "simTime": "08:00",
       "event": "(A,V24,T,5)",
       "action": {
-        "amount": 5.0,
-        "chargeMode": "slow",
-        "queueNumber": "T10",
-        "requestId": "REQ20260614170140E5DAE8EA",
         "type": "submit",
-        "userId": "V24"
+        "userId": "V24",
+        "requestId": "REQ20260615112903DB5A0312",
+        "queueNumber": "T10",
+        "chargeMode": "slow",
+        "amount": 5.0
       },
       "snapshot": {
+        "simTime": "08:00",
         "clock": {
-          "currentTime": "2026-06-03T08:00:01.444130",
-          "displayTime": "08:00",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T08:00:00",
+          "displayTime": "08:00",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 25,
         "piles": {
-          "快充1": "(V3,55.00,66.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,52.50,63.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,20.00,24.00)-(V17,T,10.00)-(V24,T,5.00)",
-          "慢充2": "(V5,15.83,19.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,15.00,18.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,55.00,75.00)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,52.50,72.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,20.00,27.00)-(V17,T,10.00)-(V24,T,5.00)",
+          "慢充2": "(V5,15.83,22.00)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,15.00,21.00)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "08:00",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 25
       }
     },
     {
@@ -854,33 +854,33 @@
       "simTime": "08:20",
       "event": "(A,V25,T,15)",
       "action": {
-        "amount": 15.0,
-        "chargeMode": "slow",
-        "queueNumber": "T11",
-        "requestId": "REQ202606141701418E7134D8",
         "type": "submit",
-        "userId": "V25"
+        "userId": "V25",
+        "requestId": "REQ20260615112903A8AD9787",
+        "queueNumber": "T11",
+        "chargeMode": "slow",
+        "amount": 15.0
       },
       "snapshot": {
+        "simTime": "08:20",
         "clock": {
-          "currentTime": "2026-06-03T08:20:02.963870",
-          "displayTime": "08:20",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T08:20:00",
+          "displayTime": "08:20",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 26,
         "piles": {
-          "快充1": "(V3,65.00,78.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,62.50,75.00)-(V9,F,105.00)-(V12,F,90.00)",
-          "慢充1": "(V1,23.33,28.00)-(V17,T,10.00)-(V24,T,5.00)",
-          "慢充2": "(V5,19.17,23.00)-(V8,T,20.00)-(V18,T,7.50)",
-          "慢充3": "(V6,18.33,22.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "快充1": "(V3,65.00,90.00)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,62.50,87.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "慢充1": "(V1,23.33,32.00)-(V17,T,10.00)-(V24,T,5.00)",
+          "慢充2": "(V5,19.17,27.00)-(V8,T,20.00)-(V18,T,7.50)",
+          "慢充3": "(V6,18.33,26.00)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "08:20",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V25,T,15.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V25,T,15.00)",
+        "lastEventIndex": 26
       }
     },
     {
@@ -888,31 +888,31 @@
       "simTime": "08:25",
       "event": "(B,T1,O,0)",
       "action": {
-        "dispatched": [],
-        "faultId": "FAULT20260614170142CCB3E323",
+        "type": "fault",
         "pileId": "C",
-        "type": "fault"
+        "faultId": "FAULT20260615112903AB2AE18E",
+        "dispatched": []
       },
       "snapshot": {
+        "simTime": "08:25",
         "clock": {
-          "currentTime": "2026-06-03T08:25:03.892270",
-          "displayTime": "08:25",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T08:25:00",
+          "displayTime": "08:25",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 27,
         "piles": {
-          "快充1": "(V3,67.50,81.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,65.00,78.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充1": "(V3,67.50,93.75)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,65.00,90.75)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V1,T,15.83)-(V17,T,10.00)-(V24,T,5.00)",
           "慢充2": "(V8,0.00,0.00)-(V18,T,7.50)-(V25,T,15.00)",
-          "慢充3": "(V6,19.17,23.00)-(V10,T,10.00)-(V15,T,10.00)"
+          "慢充3": "(V6,19.17,27.25)-(V10,T,10.00)-(V15,T,10.00)"
         },
-        "simTime": "08:25",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 27
       }
     },
     {
@@ -920,33 +920,33 @@
       "simTime": "08:30",
       "event": "(A,V26,T,20)",
       "action": {
-        "amount": 20.0,
-        "chargeMode": "slow",
-        "queueNumber": "T12",
-        "requestId": "REQ20260614170144238B62F3",
         "type": "submit",
-        "userId": "V26"
+        "userId": "V26",
+        "requestId": "REQ20260615112903BA935174",
+        "queueNumber": "T12",
+        "chargeMode": "slow",
+        "amount": 20.0
       },
       "snapshot": {
+        "simTime": "08:30",
         "clock": {
-          "currentTime": "2026-06-03T08:30:03.775470",
-          "displayTime": "08:30",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T08:30:00",
+          "displayTime": "08:30",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 28,
         "piles": {
-          "快充1": "(V3,70.00,84.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,67.50,81.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充1": "(V3,70.00,97.50)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,67.50,94.50)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V17,T,10.00)-(V24,T,5.00)",
           "慢充2": "(V8,0.83,1.25)-(V18,T,7.50)-(V25,T,15.00)",
           "慢充3": "(V10,0.00,0.00)-(V15,T,10.00)-(V1,T,15.83)"
         },
-        "simTime": "08:30",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)",
+        "lastEventIndex": 28
       }
     },
     {
@@ -954,33 +954,33 @@
       "simTime": "08:35",
       "event": "(A,V27,T,25)",
       "action": {
-        "amount": 25.0,
-        "chargeMode": "slow",
-        "queueNumber": "T13",
-        "requestId": "REQ20260614170145C1ECA2CE",
         "type": "submit",
-        "userId": "V27"
+        "userId": "V27",
+        "requestId": "REQ20260615112903775F7739",
+        "queueNumber": "T13",
+        "chargeMode": "slow",
+        "amount": 25.0
       },
       "snapshot": {
+        "simTime": "08:35",
         "clock": {
-          "currentTime": "2026-06-03T08:35:03.853900",
-          "displayTime": "08:35",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T08:35:00",
+          "displayTime": "08:35",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 29,
         "piles": {
-          "快充1": "(V3,72.50,87.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,70.00,84.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充1": "(V3,72.50,101.25)-(V7,F,110.00)-(V11,F,110.00)",
+          "快充2": "(V4,70.00,98.25)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V17,T,10.00)-(V24,T,5.00)",
           "慢充2": "(V8,1.67,2.50)-(V18,T,7.50)-(V25,T,15.00)",
           "慢充3": "(V10,0.83,1.25)-(V15,T,10.00)-(V1,T,15.83)"
         },
-        "simTime": "08:35",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)",
+        "lastEventIndex": 29
       }
     },
     {
@@ -988,31 +988,31 @@
       "simTime": "08:50",
       "event": "(B,F1,O,0)",
       "action": {
-        "dispatched": [],
-        "faultId": "FAULT202606141701478BC2CD4C",
+        "type": "fault",
         "pileId": "A",
-        "type": "fault"
+        "faultId": "FAULT20260615112903BA1D6BF7",
+        "dispatched": []
       },
       "snapshot": {
+        "simTime": "08:50",
         "clock": {
-          "currentTime": "2026-06-03T08:50:00.769020",
-          "displayTime": "08:50",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T08:50:00",
+          "displayTime": "08:50",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 30,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,77.50,93.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,77.50,109.50)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V17,T,10.00)-(V24,T,5.00)",
           "慢充2": "(V8,4.17,6.25)-(V18,T,7.50)-(V25,T,15.00)",
           "慢充3": "(V10,3.33,5.00)-(V15,T,10.00)-(V1,T,15.83)"
         },
-        "simTime": "08:50",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)",
+        "lastEventIndex": 30
       }
     },
     {
@@ -1020,33 +1020,33 @@
       "simTime": "09:00",
       "event": "(A,V28,F,30)",
       "action": {
-        "amount": 30.0,
-        "chargeMode": "fast",
-        "message": "提交失败：等候区已满",
-        "reason": "waiting queue is full",
         "type": "submit_failed",
-        "userId": "V28"
+        "userId": "V28",
+        "chargeMode": "fast",
+        "amount": 30.0,
+        "reason": "waiting queue is full",
+        "message": "提交失败：等候区已满"
       },
       "snapshot": {
+        "simTime": "09:00",
         "clock": {
-          "currentTime": "2026-06-03T09:00:01.754610",
-          "displayTime": "09:00",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:00:00",
+          "displayTime": "09:00",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 31,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,82.50,99.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,82.50,117.00)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V17,T,10.00)-(V24,T,5.00)",
           "慢充2": "(V8,5.83,8.75)-(V18,T,7.50)-(V25,T,15.00)",
           "慢充3": "(V10,5.00,7.50)-(V15,T,10.00)-(V1,T,15.83)"
         },
-        "simTime": "09:00",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)",
+        "lastEventIndex": 31
       }
     },
     {
@@ -1054,30 +1054,30 @@
       "simTime": "09:10",
       "event": "(A,V1,O,0)",
       "action": {
-        "requestId": "REQ202606141701246C95BFFA",
         "type": "cancel",
-        "userId": "V1"
+        "userId": "V1",
+        "requestId": "REQ202606151129031EAD390B"
       },
       "snapshot": {
+        "simTime": "09:10",
         "clock": {
-          "currentTime": "2026-06-03T09:10:00.841780",
-          "displayTime": "09:10",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:10:00",
+          "displayTime": "09:10",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 32,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,87.50,105.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,87.50,124.50)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V24,T,5.00)",
           "慢充2": "(V8,7.50,11.25)-(V18,T,7.50)-(V25,T,15.00)",
           "慢充3": "(V10,6.67,10.00)-(V15,T,10.00)-(V17,T,10.00)"
         },
-        "simTime": "09:10",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)-(V26,T,20.00)-(V27,T,25.00)",
+        "lastEventIndex": 32
       }
     },
     {
@@ -1085,37 +1085,37 @@
       "simTime": "09:15",
       "event": "(B,T1,O,1)",
       "action": {
+        "type": "recover",
+        "pileId": "C",
+        "faultId": "FAULT20260615112903AB2AE18E",
         "dispatched": [
           "V15",
           "V17",
           "V18",
           "V24",
           "V25"
-        ],
-        "faultId": "FAULT20260614170142CCB3E323",
-        "pileId": "C",
-        "type": "recover"
+        ]
       },
       "snapshot": {
+        "simTime": "09:15",
         "clock": {
-          "currentTime": "2026-06-03T09:15:01.474670",
-          "displayTime": "09:15",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:15:00",
+          "displayTime": "09:15",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 33,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,90.00,108.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,90.00,128.25)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,0.00,0.00)-(V18,T,7.50)-(V27,T,25.00)",
           "慢充2": "(V8,8.33,12.50)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V10,7.50,11.25)-(V17,T,10.00)-(V25,T,15.00)"
         },
-        "simTime": "09:15",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 33
       }
     },
     {
@@ -1123,30 +1123,30 @@
       "simTime": "09:20",
       "event": "(A,V27,O,0)",
       "action": {
-        "requestId": "REQ20260614170145C1ECA2CE",
         "type": "cancel",
-        "userId": "V27"
+        "userId": "V27",
+        "requestId": "REQ20260615112903775F7739"
       },
       "snapshot": {
+        "simTime": "09:20",
         "clock": {
-          "currentTime": "2026-06-03T09:20:01.339950",
-          "displayTime": "09:20",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:20:00",
+          "displayTime": "09:20",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 34,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,92.50,111.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,92.50,132.00)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,0.83,1.25)-(V18,T,7.50)",
           "慢充2": "(V8,9.17,13.75)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V10,8.33,12.50)-(V17,T,10.00)-(V25,T,15.00)"
         },
-        "simTime": "09:20",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,95.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 34
       }
     },
     {
@@ -1154,31 +1154,31 @@
       "simTime": "09:25",
       "event": "(C,V21,O,35)",
       "action": {
-        "amount": 35.0,
-        "requestId": "REQ2026061417013858CC3C86",
         "type": "modify_amount",
-        "userId": "V21"
+        "userId": "V21",
+        "requestId": "REQ202606151129030EA5CA6B",
+        "amount": 35.0
       },
       "snapshot": {
+        "simTime": "09:25",
         "clock": {
-          "currentTime": "2026-06-03T09:25:01.126450",
-          "displayTime": "09:25",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:25:00",
+          "displayTime": "09:25",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 35,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,95.00,114.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,95.00,135.75)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,1.67,2.50)-(V18,T,7.50)",
           "慢充2": "(V8,10.00,15.00)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V10,9.17,13.75)-(V17,T,10.00)-(V25,T,15.00)"
         },
-        "simTime": "09:25",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V19,F,75.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 35
       }
     },
     {
@@ -1186,30 +1186,30 @@
       "simTime": "09:30",
       "event": "(A,V19,O,0)",
       "action": {
-        "requestId": "REQ20260614170136F028D199",
         "type": "cancel",
-        "userId": "V19"
+        "userId": "V19",
+        "requestId": "REQ202606151129034941FBBE"
       },
       "snapshot": {
+        "simTime": "09:30",
         "clock": {
-          "currentTime": "2026-06-03T09:30:02.086930",
-          "displayTime": "09:30",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:30:00",
+          "displayTime": "09:30",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 36,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,97.50,117.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,97.50,139.50)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,2.50,3.75)-(V18,T,7.50)",
           "慢充2": "(V8,10.83,16.25)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V17,0.00,0.00)-(V25,T,15.00)"
         },
-        "simTime": "09:30",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 36
       }
     },
     {
@@ -1217,34 +1217,34 @@
       "simTime": "09:35",
       "event": "(A,V28,O,0)",
       "action": {
-        "action": "cancel",
-        "detail": "active request not found for V28",
-        "message": "V28 此前提交失败，无需取消",
-        "reason": "previous_submit_failed",
-        "success": false,
         "type": "skipped",
-        "userId": "V28"
+        "success": false,
+        "userId": "V28",
+        "action": "cancel",
+        "reason": "previous_submit_failed",
+        "message": "V28 此前提交失败，无需取消",
+        "detail": "active request not found for V28"
       },
       "snapshot": {
+        "simTime": "09:35",
         "clock": {
-          "currentTime": "2026-06-03T09:35:01.577770",
-          "displayTime": "09:35",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:35:00",
+          "displayTime": "09:35",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 37,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,100.00,120.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,100.00,143.25)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,3.33,5.00)-(V18,T,7.50)",
           "慢充2": "(V8,11.67,17.50)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V17,0.83,1.25)-(V25,T,15.00)"
         },
-        "simTime": "09:35",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,80.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,80.00)",
+        "lastEventIndex": 37
       }
     },
     {
@@ -1252,31 +1252,31 @@
       "simTime": "09:40",
       "event": "(C,V23,O,40)",
       "action": {
-        "amount": 40.0,
-        "requestId": "REQ2026061417013988121A94",
         "type": "modify_amount",
-        "userId": "V23"
+        "userId": "V23",
+        "requestId": "REQ20260615112903378C7072",
+        "amount": 40.0
       },
       "snapshot": {
+        "simTime": "09:40",
         "clock": {
-          "currentTime": "2026-06-03T09:40:00.494790",
-          "displayTime": "09:40",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:40:00",
+          "displayTime": "09:40",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 38,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,102.50,123.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,102.50,147.00)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,4.17,6.25)-(V18,T,7.50)",
           "慢充2": "(V8,12.50,18.75)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V17,1.67,2.50)-(V25,T,15.00)"
         },
-        "simTime": "09:40",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)",
+        "lastEventIndex": 38
       }
     },
     {
@@ -1284,33 +1284,33 @@
       "simTime": "09:50",
       "event": "(A,V29,T,30)",
       "action": {
-        "amount": 30.0,
-        "chargeMode": "slow",
-        "queueNumber": "T14",
-        "requestId": "REQ2026061417015325843787",
         "type": "submit",
-        "userId": "V29"
+        "userId": "V29",
+        "requestId": "REQ20260615112904ACA35024",
+        "queueNumber": "T14",
+        "chargeMode": "slow",
+        "amount": 30.0
       },
       "snapshot": {
+        "simTime": "09:50",
         "clock": {
-          "currentTime": "2026-06-03T09:50:02.806680",
-          "displayTime": "09:50",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:50:00",
+          "displayTime": "09:50",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 39,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,107.50,129.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,107.50,154.50)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,5.83,8.75)-(V18,T,7.50)-(V29,T,30.00)",
           "慢充2": "(V8,14.17,21.25)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V17,3.33,5.00)-(V25,T,15.00)"
         },
-        "simTime": "09:50",
-        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,95.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)",
+        "lastEventIndex": 39
       }
     },
     {
@@ -1318,31 +1318,31 @@
       "simTime": "09:55",
       "event": "(C,V14,O,30)",
       "action": {
-        "amount": 30.0,
-        "requestId": "REQ20260614170131D9021430",
         "type": "modify_amount",
-        "userId": "V14"
+        "userId": "V14",
+        "requestId": "REQ20260615112903DF3C3F18",
+        "amount": 30.0
       },
       "snapshot": {
+        "simTime": "09:55",
         "clock": {
-          "currentTime": "2026-06-03T09:55:01.015260",
-          "displayTime": "09:55",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T09:55:00",
+          "displayTime": "09:55",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 40,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,110.00,132.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,110.00,158.25)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,6.67,10.00)-(V18,T,7.50)-(V29,T,30.00)",
           "慢充2": "(V8,15.00,22.50)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V17,4.17,6.25)-(V25,T,15.00)"
         },
-        "simTime": "09:55",
-        "waitingArea": "(V13,F,110.00)-(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)",
+        "lastEventIndex": 40
       }
     },
     {
@@ -1350,33 +1350,33 @@
       "simTime": "10:00",
       "event": "(A,V30,T,10)",
       "action": {
-        "amount": 10.0,
-        "chargeMode": "slow",
-        "queueNumber": "T15",
-        "requestId": "REQ2026061417015585B6C752",
         "type": "submit",
-        "userId": "V30"
+        "userId": "V30",
+        "requestId": "REQ202606151129041EF2C599",
+        "queueNumber": "T15",
+        "chargeMode": "slow",
+        "amount": 10.0
       },
       "snapshot": {
+        "simTime": "10:00",
         "clock": {
-          "currentTime": "2026-06-03T10:00:01.527770",
-          "displayTime": "10:00",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T10:00:00",
+          "displayTime": "10:00",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 41,
         "piles": {
           "快充1": "(V3,F,20.00)-(V7,F,110.00)-(V11,F,110.00)",
-          "快充2": "(V4,112.50,135.00)-(V9,F,105.00)-(V12,F,90.00)",
+          "快充2": "(V4,112.50,162.00)-(V9,F,105.00)-(V12,F,90.00)",
           "慢充1": "(V15,7.50,11.25)-(V18,T,7.50)-(V29,T,30.00)",
           "慢充2": "(V8,15.83,23.75)-(V24,T,5.00)-(V26,T,20.00)",
           "慢充3": "(V17,5.00,7.50)-(V25,T,15.00)-(V30,T,10.00)"
         },
-        "simTime": "10:00",
-        "waitingArea": "(V13,F,110.00)-(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)"
+        "waitingArea": "(V13,F,110.00)-(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)",
+        "lastEventIndex": 41
       }
     },
     {
@@ -1384,27 +1384,27 @@
       "simTime": "10:50",
       "event": "(B,F1,O,1)",
       "action": {
+        "type": "recover",
+        "pileId": "A",
+        "faultId": "FAULT20260615112903BA1D6BF7",
         "dispatched": [
           "V3",
           "V7",
           "V11",
           "V12"
-        ],
-        "faultId": "FAULT202606141701478BC2CD4C",
-        "pileId": "A",
-        "type": "recover"
+        ]
       },
       "snapshot": {
+        "simTime": "10:50",
         "clock": {
-          "currentTime": "2026-06-03T10:50:00.733090",
-          "displayTime": "10:50",
           "enabled": true,
-          "minutesPerEvent": 5,
-          "realtimeTick": true,
+          "realtimeTick": false,
+          "currentTime": "2026-06-03T10:50:00",
+          "displayTime": "10:50",
           "startTime": "2026-06-03T06:00:00",
+          "minutesPerEvent": 5,
           "timeScale": 10
         },
-        "lastEventIndex": 42,
         "piles": {
           "快充1": "(V3,0.00,0.00)-(V7,F,110.00)-(V12,F,90.00)",
           "快充2": "(V9,0.00,0.00)-(V11,F,110.00)-(V13,F,110.00)",
@@ -1412,22 +1412,22 @@
           "慢充2": "(V24,0.00,0.00)-(V26,T,20.00)",
           "慢充3": "(V25,0.00,0.00)-(V30,T,10.00)"
         },
-        "simTime": "10:50",
-        "waitingArea": "(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)"
+        "waitingArea": "(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)",
+        "lastEventIndex": 42
       }
     }
   ],
   "finalSnapshot": {
+    "simTime": "10:50",
     "clock": {
-      "currentTime": "2026-06-03T10:50:02.294200",
-      "displayTime": "10:50",
       "enabled": true,
-      "minutesPerEvent": 5,
       "realtimeTick": true,
+      "currentTime": "2026-06-03T10:50:00.071050",
+      "displayTime": "10:50",
       "startTime": "2026-06-03T06:00:00",
+      "minutesPerEvent": 5,
       "timeScale": 10
     },
-    "lastEventIndex": 42,
     "piles": {
       "快充1": "(V3,0.00,0.00)-(V7,F,110.00)-(V12,F,90.00)",
       "快充2": "(V9,0.00,0.00)-(V11,F,110.00)-(V13,F,110.00)",
@@ -1435,7 +1435,7 @@
       "慢充2": "(V24,0.00,0.00)-(V26,T,20.00)",
       "慢充3": "(V25,0.00,0.00)-(V30,T,10.00)"
     },
-    "simTime": "10:50",
-    "waitingArea": "(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)"
+    "waitingArea": "(V14,F,30.00)-(V16,F,60.00)-(V20,F,95.00)-(V21,F,35.00)-(V22,F,70.00)-(V23,F,40.00)",
+    "lastEventIndex": 42
   }
 }
